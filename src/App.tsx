@@ -5,6 +5,8 @@ import { IItem } from './interfaces/IItems';
 export default function App() {
   const [items, setItems] = useState<IItem[]>([]);
   const [selectInput, setSelectInput] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [availableOptions, setAvailableOptions] = useState([
     {
@@ -168,9 +170,8 @@ export default function App() {
 
   const findAndPrintReceipt = async () => {
     try {
-      // Conectar ao dispositivo Bluetooth
       const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true, // Lista todos os dispositivos para exploração inicial
+        acceptAllDevices: true,
       });
 
       console.log('Dispositivo conectado:', device.name);
@@ -179,14 +180,12 @@ export default function App() {
       if (!server)
         throw new Error('Não foi possível conectar ao servidor GATT');
 
-      // Explorar serviços
       const services = await server.getPrimaryServices();
       console.log('Serviços encontrados:');
       services.forEach((service) => {
         console.log(`- UUID do Serviço: ${service.uuid}`);
       });
 
-      // Tentar encontrar uma característica de escrita
       let foundServiceUUID: string | null = null;
       let foundCharacteristicUUID: string | null = null;
 
@@ -229,7 +228,6 @@ export default function App() {
     }
   };
 
-  // Função de impressão com UUIDs encontrados
   const printWithFoundUUIDs = async (
     device: BluetoothDevice,
     serviceUUID: string,
@@ -247,6 +245,8 @@ export default function App() {
       let receipt = '';
       receipt += '    PEDIDO - LANCHONETE    \n';
       receipt += '----------------------------\n';
+      receipt += `Nome: ${name}\n`;
+      receipt += `Endereço: ${address}\n`;
       items.forEach((item, index) => {
         receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
         receipt += `   Qtde: ${item.quantity}\n`;
@@ -283,34 +283,59 @@ export default function App() {
         <h1 className='mb-4 text-xl font-semibold text-gray-800'>
           Adicionar Item
         </h1>
-        <div className='flex flex-col gap-4 md:flex-row'>
-          <select
-            name='item'
-            value={selectInput}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-              setSelectInput(event.target.value)
-            }
-            className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
-          >
-            <option value='' disabled>
-              Selecione um item
-            </option>
-            {availableOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+
+        <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-4 md:flex-row'>
+            <input
+              type='text'
+              value={name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setName(e.target.value)
+              }
+              className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
+              placeholder='Nome de quem pediu'
+            />
+            <input
+              type='text'
+              value={address}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setAddress(e.target.value)
+              }
+              className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
+              placeholder='Endereço'
+            />
+          </div>
+
+          <div className='flex flex-col gap-4 md:flex-row'>
+            <select
+              name='item'
+              value={selectInput}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                setSelectInput(event.target.value)
+              }
+              className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
+            >
+              <option value='' disabled>
+                Selecione um item
               </option>
-            ))}
-          </select>
-          <input
-            type='number'
-            min='1'
-            value={quantity}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setQuantity(parseInt(event.target.value))
-            }
-            className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/4'
-            placeholder='Quantidade'
-          />
+              {availableOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <input
+              type='number'
+              min='1'
+              value={quantity}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setQuantity(parseInt(event.target.value))
+              }
+              className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
+              placeholder='Quantidade'
+            />
+          </div>
+
           <button
             onClick={handleSelectItem}
             className='flex w-full items-center gap-1 rounded-md bg-blue-500 px-4 py-2 text-white transition duration-200 hover:bg-blue-600 md:w-auto'
@@ -423,6 +448,7 @@ export default function App() {
                   ))}
                 </div>
               </div>
+
               <div className='mt-2'>
                 <label className='text-gray-700'>Observação:</label>
                 <textarea
