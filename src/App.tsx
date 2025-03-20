@@ -172,6 +172,7 @@ export default function App() {
     try {
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
+        optionalServices: ['battery_service', 'device_information'],
       });
 
       console.log('Dispositivo conectado:', device.name);
