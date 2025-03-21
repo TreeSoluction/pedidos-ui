@@ -172,7 +172,7 @@ export default function App() {
     try {
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ['battery_service', 'device_information'],
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'],
       });
 
       console.log('Dispositivo conectado:', device.name);
@@ -247,26 +247,47 @@ export default function App() {
       receipt += '    PEDIDO - LANCHONETE    \n';
       receipt += '----------------------------\n';
       receipt += `Nome: ${name}\n`;
-      receipt += `Endereço: ${address}\n`;
+      receipt += `Endereco: ${address}\n`;
       items.forEach((item, index) => {
         receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
-        receipt += `   Qtde: ${item.quantity}\n`;
+        receipt += `    Qtde: ${item.quantity}\n`;
         if (item.removedIngredients?.length)
           receipt +=
-            '   Sem: ' + item.removedIngredients.join(', ').slice(0, 23) + '\n';
+            '    -: ' + item.removedIngredients.join(', ').slice(0, 23) + '\n';
         if (item.addedIngredients?.length)
           receipt +=
-            '   + ' + item.addedIngredients.join(', ').slice(0, 25) + '\n';
+            '    + ' + item.addedIngredients.join(', ').slice(0, 25) + '\n';
         if (item.observation)
-          receipt += '   Obs: ' + item.observation.slice(0, 23) + '\n';
+          receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
         receipt += '----------------------------\n';
       });
       receipt += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
       receipt += '\n\n\n';
 
       const encoder = new TextEncoder();
-      const data = encoder.encode('\x1B\x40' + receipt + '\x1D\x56\x00');
-      await characteristic.writeValue(data);
+      const header = encoder.encode('\x1B\x40');
+      const footer = encoder.encode('\x1D\x56\x00');
+
+      const receiptData = encoder.encode(receipt);
+      const chunkSize = 256 - header.length - footer.length;
+      const delay = 50;
+
+      async function sendChunkWithDelay(
+        characteristic: BluetoothRemoteGATTCharacteristic,
+        chunk: Uint8Array<ArrayBuffer>,
+      ) {
+        await characteristic.writeValue(chunk);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+
+      await characteristic.writeValue(header);
+
+      for (let i = 0; i < receiptData.length; i += chunkSize) {
+        const chunk = receiptData.slice(i, i + chunkSize);
+        await sendChunkWithDelay(characteristic, chunk);
+      }
+
+      await characteristic.writeValue(footer);
 
       console.log('Impresso com sucesso usando os UUIDs encontrados!');
       await server?.disconnect();
