@@ -10,7 +10,7 @@ export default function App() {
   const [quantity, setQuantity] = useState<number>(1);
   const [availableOptions, setAvailableOptions] = useState([
     {
-      value: 'teste',
+      value: 'cheeseburger',
       label: 'Cheeseburger',
       removable: ['Alface', 'Tomate', 'Cebola', 'Picles', 'Maionese'],
       addable: [
