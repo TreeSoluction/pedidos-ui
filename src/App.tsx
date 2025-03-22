@@ -1,70 +1,40 @@
-import { PlusIcon, Trash2Icon, X } from 'lucide-react';
-import { ChangeEvent, useState } from 'react';
-import { IItem } from './interfaces/IItems';
+import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { IProduct, IProductSelected } from './interfaces/IProducts';
+import { GetAllProducts } from './services/product.service';
 
 export default function App() {
-  const [items, setItems] = useState<IItem[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<IProductSelected[]>(
+    [],
+  );
   const [selectInput, setSelectInput] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
-  const [availableOptions, setAvailableOptions] = useState([
-    {
-      value: 'cheeseburger',
-      label: 'Cheeseburger',
-      removable: ['Alface', 'Tomate', 'Cebola', 'Picles', 'Maionese'],
-      addable: [
-        'Bacon',
-        'Queijo Cheddar Extra',
-        'Cebola Caramelizada',
-        'Jalapeño',
-      ],
-    },
-    {
-      value: 'frango_crispy',
-      label: 'Frango Crispy',
-      removable: ['Alface', 'Molho Especial', 'Tomate'],
-      addable: ['Queijo Suíço', 'Bacon', 'Barbecue', 'Cebola Roxa'],
-    },
-    {
-      value: 'hot_dog_classico',
-      label: 'Hot Dog Clássico',
-      removable: ['Ketchup', 'Mostarda', 'Cebola Picada', 'Relish'],
-      addable: ['Queijo Ralado', 'Chili', 'Bacon Bits', 'Maionese Temperada'],
-    },
-    {
-      value: 'sanduiche_vegetariano',
-      label: 'Sanduíche Vegetariano',
-      removable: [
-        'Rúcula',
-        'Cenoura Ralada',
-        'Molho de Iogurte',
-        'Tomate Seco',
-      ],
-      addable: ['Queijo Feta', 'Azeitonas', 'Pesto', 'Abacate'],
-    },
-  ]);
+  const [products, setProducts] = useState<IProduct[]>([]);
+
+  useEffect(() => {
+    const asyncRequests = async () => {
+      const productsRequest = await GetAllProducts();
+      setProducts(productsRequest);
+    };
+
+    asyncRequests();
+  }, []);
 
   const handleSelectItem = () => {
     if (selectInput) {
-      const selectedOption = availableOptions.find(
-        (option) => option.value === selectInput,
+      const selectedOption = products.find(
+        (option) => option.id === selectInput,
       );
       if (selectedOption) {
-        const newItem: IItem = {
-          value: selectedOption.value,
-          name: selectedOption.label,
-          quantity: parseInt(quantity.toString()),
-          removableIngredients: selectedOption.removable || [],
-          addableIngredients: selectedOption.addable || [],
-          removedIngredients: [],
-          addedIngredients: [],
+        const newProduct: IProductSelected = {
+          ...selectedOption,
           observation: '',
+          quantity: quantity,
         };
-        setItems([...items, newItem]);
-        setAvailableOptions(
-          availableOptions.filter((option) => option.value !== selectInput),
-        );
+
+        setSelectedProducts([...selectedProducts, newProduct]);
         setSelectInput('');
         setQuantity(1);
       }
@@ -72,100 +42,21 @@ export default function App() {
   };
 
   const handleRemoveItem = (index: number) => {
-    const removedItem = items[index];
-    setItems(items.filter((_, i) => i !== index));
-    setAvailableOptions([
-      ...availableOptions,
-      {
-        value: removedItem.value,
-        label: removedItem.name,
-        removable: removedItem.removableIngredients ?? [],
-        addable: removedItem.addableIngredients ?? [],
-      },
-    ]);
+    setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
   };
 
   const handleQuantityChange = (index: number, newQuantity: string) => {
-    const updatedItems = items.map((item, i) =>
+    const updatedItems = selectedProducts.map((item, i) =>
       i === index ? { ...item, quantity: parseInt(newQuantity) || 1 } : item,
     );
-    setItems(updatedItems);
-  };
-
-  const handleRemoveIngredient = (index: number, ingredient: string) => {
-    const updatedItems = items.map((item, i) =>
-      i === index && item.removableIngredients?.includes(ingredient)
-        ? {
-            ...item,
-            removedIngredients: [
-              ...(item.removedIngredients || []),
-              ingredient,
-            ],
-            removableIngredients: item.removableIngredients.filter(
-              (ing) => ing !== ingredient,
-            ),
-          }
-        : item,
-    );
-    setItems(updatedItems);
-  };
-
-  const handleAddIngredient = (index: number, ingredient: string) => {
-    const updatedItems = items.map((item, i) =>
-      i === index && item.addableIngredients?.includes(ingredient)
-        ? {
-            ...item,
-            addedIngredients: [...(item.addedIngredients || []), ingredient],
-            addableIngredients: item.addableIngredients.filter(
-              (ing) => ing !== ingredient,
-            ),
-          }
-        : item,
-    );
-    setItems(updatedItems);
-  };
-
-  const handleUndoRemoveIngredient = (index: number, ingredient: string) => {
-    const updatedItems = items.map((item, i) =>
-      i === index
-        ? {
-            ...item,
-            removedIngredients: item.removedIngredients?.filter(
-              (ing) => ing !== ingredient,
-            ),
-            removableIngredients: [
-              ...(item.removableIngredients || []),
-              ingredient,
-            ],
-          }
-        : item,
-    );
-    setItems(updatedItems);
-  };
-
-  const handleUndoAddIngredient = (index: number, ingredient: string) => {
-    const updatedItems = items.map((item, i) =>
-      i === index
-        ? {
-            ...item,
-            addedIngredients: item.addedIngredients?.filter(
-              (ing) => ing !== ingredient,
-            ),
-            addableIngredients: [
-              ...(item.addableIngredients || []),
-              ingredient,
-            ],
-          }
-        : item,
-    );
-    setItems(updatedItems);
+    setSelectedProducts(updatedItems);
   };
 
   const handleObservationChange = (index: number, observation: string) => {
-    const updatedItems = items.map((item, i) =>
+    const updatedItems = selectedProducts.map((item, i) =>
       i === index ? { ...item, observation } : item,
     );
-    setItems(updatedItems);
+    setSelectedProducts(updatedItems);
   };
 
   const findAndPrintReceipt = async () => {
@@ -193,7 +84,7 @@ export default function App() {
       for (const service of services) {
         const characteristics = await service.getCharacteristics();
         console.log(`Características do serviço ${service.uuid}:`);
-        characteristics.forEach((characteristic) => {
+        for (const characteristic of characteristics) {
           console.log(`- UUID da Característica: ${characteristic.uuid}`);
           console.log(
             `  Propriedades: ${characteristic.properties.write ? 'Escrita' : ''} ${characteristic.properties.read ? 'Leitura' : ''}`,
@@ -202,7 +93,7 @@ export default function App() {
             foundServiceUUID = service.uuid;
             foundCharacteristicUUID = characteristic.uuid;
           }
-        });
+        }
       }
 
       if (foundServiceUUID && foundCharacteristicUUID) {
@@ -247,28 +138,25 @@ export default function App() {
       receipt += '    PEDIDO - LANCHONETE    \n';
       receipt += '----------------------------\n';
       receipt += `Nome: ${name}\n`;
-      receipt += `Endereco: ${address}\n`;
-      items.forEach((item, index) => {
-        receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
+      receipt += `Endereço: ${address}\n`;
+
+      selectedProducts.forEach((item, index) => {
+        receipt += `${index + 1}. ${formatText(item.name, 32)}\n`;
         receipt += `    Qtde: ${item.quantity}\n`;
-        if (item.removedIngredients?.length)
-          receipt +=
-            '    -: ' + item.removedIngredients.join(', ').slice(0, 23) + '\n';
-        if (item.addedIngredients?.length)
-          receipt +=
-            '    + ' + item.addedIngredients.join(', ').slice(0, 25) + '\n';
-        if (item.observation)
-          receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
+        if (item.observation) {
+          receipt += `    Obs: ${formatText(item.observation, 32)}\n`;
+        }
         receipt += '----------------------------\n';
       });
+
       receipt += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
       receipt += '\n\n\n';
 
       const encoder = new TextEncoder();
       const header = encoder.encode('\x1B\x40');
       const footer = encoder.encode('\x1D\x56\x00');
-
       const receiptData = encoder.encode(receipt);
+
       const chunkSize = 256 - header.length - footer.length;
       const delay = 50;
 
@@ -297,6 +185,24 @@ export default function App() {
       console.error('Erro ao imprimir com UUIDs encontrados:', error);
       alert(`Erro ao imprimir: ${errorMessage}`);
     }
+  };
+
+  const formatText = (text: string, lineWidth = 32): string => {
+    const words = text.split(' ');
+    let line = '';
+    let formattedText = '';
+
+    words.forEach((word) => {
+      if ((line + word).length > lineWidth) {
+        formattedText += line.trim() + '\n';
+        line = word + ' ';
+      } else {
+        line += word + ' ';
+      }
+    });
+
+    formattedText += line.trim() + '\n';
+    return formattedText;
   };
 
   return (
@@ -338,11 +244,11 @@ export default function App() {
               className='w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none md:w-1/2'
             >
               <option value='' disabled>
-                Selecione um item
+                Selecione um produto
               </option>
-              {availableOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
+              {products.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
                 </option>
               ))}
             </select>
@@ -367,12 +273,12 @@ export default function App() {
         </div>
       </div>
 
-      {items.length > 0 && (
+      {selectedProducts.length > 0 && (
         <div className='mb-6 w-full max-w-4xl space-y-4 pb-12 md:pb-0'>
           <h2 className='mb-4 text-lg font-semibold text-gray-800'>
-            Itens Selecionados
+            Produtos Selecionados
           </h2>
-          {items.map((item, index) => (
+          {selectedProducts.map((item, index) => (
             <div
               key={index}
               className='rounded-lg bg-white p-4 shadow-md transition hover:shadow-lg'
@@ -399,76 +305,6 @@ export default function App() {
                   }
                   className='w-20 rounded-md border border-gray-300 p-1 focus:ring-2 focus:ring-blue-500 focus:outline-none'
                 />
-              </div>
-              <div className='mt-2'>
-                <label className='text-gray-700'>Remover Ingrediente:</label>
-                <select
-                  className='mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                    handleRemoveIngredient(index, e.target.value)
-                  }
-                  value=''
-                >
-                  <option value='' disabled>
-                    Selecione para remover
-                  </option>
-                  {item.removableIngredients?.map((ing) => (
-                    <option key={ing} value={ing}>
-                      {ing}
-                    </option>
-                  ))}
-                </select>
-                <div className='mt-1 flex flex-wrap gap-1'>
-                  {item.removedIngredients?.map((ing, i) => (
-                    <span
-                      key={i}
-                      className='inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-sm text-red-700'
-                    >
-                      {ing}
-                      <button
-                        onClick={() => handleUndoRemoveIngredient(index, ing)}
-                        className='ml-1 text-red-500 hover:text-red-700'
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className='mt-2'>
-                <label className='text-gray-700'>Adicionar Ingrediente:</label>
-                <select
-                  className='mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                    handleAddIngredient(index, e.target.value)
-                  }
-                  value=''
-                >
-                  <option value='' disabled>
-                    Selecione para adicionar
-                  </option>
-                  {item.addableIngredients?.map((ing) => (
-                    <option key={ing} value={ing}>
-                      {ing}
-                    </option>
-                  ))}
-                </select>
-                <div className='mt-1 flex flex-wrap gap-1'>
-                  {item.addedIngredients?.map((ing, i) => (
-                    <span
-                      key={i}
-                      className='inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-sm text-green-700'
-                    >
-                      {ing}
-                      <button
-                        onClick={() => handleUndoAddIngredient(index, ing)}
-                        className='ml-1 text-green-500 hover:text-green-700'
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
               </div>
 
               <div className='mt-2'>
