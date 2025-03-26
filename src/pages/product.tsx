@@ -28,28 +28,27 @@ import {
   EditProductFormData,
   EditProductSchema,
 } from '@/schemas/product.schema';
+import { GetAllCategories } from '@/services/category.service';
+import { CreateProduct, EditProduct } from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 export default function ProductPage() {
   const [product, setProduct] = useState<IProduct>();
-  const [categories, setCategories] = useState<ICategory[]>([
-    { id: '1', name: 'Categoria 1' },
-    { id: '2', name: 'Categoria 2' },
-    { id: '3', name: 'Categoria 3' },
-  ]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const { pageType, id } = useParams<{ pageType: EPageType; id?: string }>();
+  const navigate = useNavigate();
 
   const getDefaultValues = () => {
     return {
       category: '',
       name: '',
-      buy_price: undefined,
-      purchase_price: undefined,
+      buy_price: '',
+      purchase_price: '',
     } as CreateProductFormData | EditProductFormData;
   };
 
@@ -62,45 +61,122 @@ export default function ProductPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await getProduct();
+      await getCategories();
+
+      if (id) {
+        await getProduct();
+      }
     };
 
-    if (id) {
-      fetchData();
-    } else {
-      console.log('Não existe id');
-    }
+    fetchData();
   }, [id]);
 
-  const onSubmit = async (
-    data: CreateProductFormData | EditProductFormData,
-  ) => {
-    if (pageType === EPageType.create) {
-      await createProduct(data);
-    } else {
-      await editProduct(data);
+  const onSubmit = form.handleSubmit(async (data) => {
+    try {
+      if (pageType === EPageType.create) {
+        await createProduct(data);
+      } else {
+        await editProduct(data);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error);
     }
-  };
+  });
 
   const createProduct = async (data: CreateProductFormData) => {
-    console.log('Criando produto:', data);
+    const { category, name, buy_price, purchase_price } = data;
+
+    const request = await CreateProduct({
+      category: {
+        connect: {
+          id: category,
+        },
+      },
+      name,
+      buy_price: buy_price ? parseCurrency(buy_price) : undefined,
+      purchase_price: purchase_price
+        ? parseCurrency(purchase_price)
+        : undefined,
+    });
+
+    if (request) {
+      navigate('/products');
+    }
   };
 
   const editProduct = async (data: EditProductFormData) => {
-    console.log('Editando produto:', data);
+    const { category, name, buy_price, purchase_price } = data;
+
+    const request = await EditProduct(
+      {
+        category: {
+          connect: {
+            id: category,
+          },
+        },
+        name,
+        buy_price: buy_price ? parseCurrency(buy_price) : undefined,
+        purchase_price: purchase_price
+          ? parseCurrency(purchase_price)
+          : undefined,
+      },
+      id || '',
+    );
+
+    if (request) {
+      navigate('/products');
+    }
   };
 
   const getProduct = async () => {};
 
+  const getCategories = async () => {
+    const request = await GetAllCategories();
+
+    setCategories(request);
+  };
+
   const getSelectedCategoryName = () => {
     const selectedId = form.getValues('category');
     const selectedCategory = categories.find((cat) => cat.id === selectedId);
+
+    if (form.formState.errors.category) {
+      return form.formState.errors.category.message as string;
+    }
+
     return selectedCategory
       ? selectedCategory.name
       : 'Nenhuma categoria selecionada';
   };
 
   const handleDrawer = () => setIsOpen((s) => !s);
+
+  const formatCurrency = (value: string) => {
+    const number = parseFloat(value.replace(/\D/g, '')) / 100;
+    return number.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setValue: (value: string) => void,
+  ) => {
+    const rawValue = e.target.value;
+
+    if (rawValue === '') {
+      setValue('');
+
+      return;
+    }
+
+    setValue(formatCurrency(rawValue));
+  };
+
+  const parseCurrency = (value: string) => {
+    return Number(value.replace(/[^0-9,-]+/g, '').replace(',', '.'));
+  };
 
   return (
     <>
@@ -112,10 +188,7 @@ export default function ProductPage() {
         </h1>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='flex flex-col gap-4'
-          >
+          <form className='flex flex-col gap-4'>
             <div className='flex w-full flex-col gap-4 rounded-md border p-2'>
               <h2 className='text-muted-foreground text-xs'>
                 Informações do Produto
@@ -139,7 +212,9 @@ export default function ProductPage() {
                 <div className='flex items-center justify-between gap-2'>
                   <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger className='truncate'>
+                      <TooltipTrigger
+                        className={`truncate ${form.formState.errors.category && 'text-red-500'}`}
+                      >
                         {getSelectedCategoryName()}
                       </TooltipTrigger>
                       <TooltipContent>
@@ -181,6 +256,7 @@ export default function ProductPage() {
                                   field.onChange(
                                     checked ? category.id : undefined,
                                   );
+                                  handleDrawer();
                                 }}
                                 size='lg'
                               />
@@ -197,12 +273,60 @@ export default function ProductPage() {
                 </Drawer>
               </div>
             </div>
+
+            <div className='flex w-full flex-col gap-4 rounded-md border p-2'>
+              <h2 className='text-muted-foreground text-xs'>Preço</h2>
+              <div className='flex w-full gap-2'>
+                <FormField
+                  control={form.control}
+                  name='buy_price'
+                  render={({ field }) => (
+                    <FormItem className='w-full'>
+                      <FormLabel>Preço</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          onChange={(e) => {
+                            handleInputChange(e, field.onChange);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='purchase_price'
+                  render={({ field }) => (
+                    <FormItem className='w-full'>
+                      <FormLabel>Custo</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          onChange={(e) => {
+                            handleInputChange(e, field.onChange);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </form>
         </Form>
       </Main>
 
       <Footer variant='ghost'>
-        <Button type='submit' variant='success' className='h-full w-full'>
+        <Button
+          type='submit'
+          variant='success'
+          className='h-full w-full'
+          onClick={onSubmit}
+        >
           <CircleCheck className='mr-2' /> Salvar Produto
         </Button>
       </Footer>

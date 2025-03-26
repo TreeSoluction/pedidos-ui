@@ -11,6 +11,24 @@ export interface IProductSelected extends IProduct {
   quantity: number;
 }
 
-export type ICreateProduct = Omit<IProduct, 'id'>;
+export interface ICreateProduct {
+  category: {
+    connect: {
+      id: string;
+    };
+  };
+  name: string;
+  purchase_price?: number;
+  buy_price?: number;
+}
 
-export type IEditProduct = Omit<IProduct, 'id'>;
+export interface IEditProduct {
+  category: {
+    connect: {
+      id: string;
+    };
+  };
+  name: string;
+  purchase_price?: number;
+  buy_price?: number;
+}
