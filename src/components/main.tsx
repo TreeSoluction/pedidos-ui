@@ -9,7 +9,7 @@ const Main = forwardRef<HTMLElement, MainProps>(
     return (
       <main
         ref={ref}
-        className={`h-full w-full overflow-x-hidden overflow-y-scroll px-2 ${className}`}
+        className={`h-[655px] w-full overflow-y-scroll px-2 pb-4 ${className}`}
         {...rest}
       >
         {children}

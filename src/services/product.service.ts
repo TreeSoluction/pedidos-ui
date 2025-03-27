@@ -7,6 +7,12 @@ export const GetAllProducts = async () => {
   return request.data;
 };
 
+export const GetProductById = async (id: string) => {
+  const request = await api.get(`products/${id}`);
+
+  return request.data;
+};
+
 export const CreateProduct = async (data: ICreateProduct) => {
   const request = await api.post('products', data);
 

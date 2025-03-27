@@ -1,9 +1,14 @@
+import { ICategory } from './ICategories';
+
 export interface IProduct {
   id: string;
-  category: string;
+  sold_price: number;
+  buy_price: number;
   name: string;
-  purchase_price?: number;
-  buy_price?: number;
+  category_id: string;
+  category: ICategory;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface IProductSelected extends IProduct {
@@ -18,7 +23,7 @@ export interface ICreateProduct {
     };
   };
   name: string;
-  purchase_price?: number;
+  sold_price?: number;
   buy_price?: number;
 }
 
@@ -29,6 +34,6 @@ export interface IEditProduct {
     };
   };
   name: string;
-  purchase_price?: number;
+  sold_price?: number;
   buy_price?: number;
 }

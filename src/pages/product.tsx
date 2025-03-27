@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/tooltip';
 import { EPageType } from '@/enums/EPageType';
 import { ICategory } from '@/interfaces/ICategories';
-import { IProduct } from '@/interfaces/IProducts';
 import {
   CreateProductFormData,
   CreateProductSchema,
@@ -29,7 +28,11 @@ import {
   EditProductSchema,
 } from '@/schemas/product.schema';
 import { GetAllCategories } from '@/services/category.service';
-import { CreateProduct, EditProduct } from '@/services/product.service';
+import {
+  CreateProduct,
+  EditProduct,
+  GetProductById,
+} from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -37,39 +40,51 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 
 export default function ProductPage() {
-  const [product, setProduct] = useState<IProduct>();
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const { pageType, id } = useParams<{ pageType: EPageType; id?: string }>();
   const navigate = useNavigate();
 
-  const getDefaultValues = () => {
-    return {
-      category: '',
-      name: '',
-      buy_price: '',
-      purchase_price: '',
-    } as CreateProductFormData | EditProductFormData;
-  };
-
   const form = useForm<CreateProductFormData | EditProductFormData>({
     resolver: zodResolver(
       pageType === EPageType.create ? CreateProductSchema : EditProductSchema,
     ),
-    defaultValues: getDefaultValues(),
+    defaultValues: {
+      category: '',
+      name: '',
+      buy_price: '',
+      sold_price: '',
+    },
   });
 
   useEffect(() => {
     const fetchData = async () => {
-      await getCategories();
+      try {
+        const categoriesData = await GetAllCategories();
+        setCategories(categoriesData);
 
-      if (id) {
-        await getProduct();
+        if (id) {
+          const product = await GetProductById(id);
+          if (product) {
+            form.reset({
+              category: product.category_id || '',
+              name: product.name || '',
+              buy_price: product.buy_price
+                ? formatCurrency((product.buy_price * 100).toString())
+                : '',
+              sold_price: product.sold_price
+                ? formatCurrency((product.sold_price * 100).toString())
+                : '',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, pageType, form]);
 
   const onSubmit = form.handleSubmit(async (data) => {
     try {
@@ -84,19 +99,15 @@ export default function ProductPage() {
   });
 
   const createProduct = async (data: CreateProductFormData) => {
-    const { category, name, buy_price, purchase_price } = data;
-
     const request = await CreateProduct({
       category: {
         connect: {
-          id: category,
+          id: data.category,
         },
       },
-      name,
-      buy_price: buy_price ? parseCurrency(buy_price) : undefined,
-      purchase_price: purchase_price
-        ? parseCurrency(purchase_price)
-        : undefined,
+      name: data.name,
+      buy_price: data.buy_price ? parseCurrency(data.buy_price) : undefined,
+      sold_price: data.sold_price ? parseCurrency(data.sold_price) : undefined,
     });
 
     if (request) {
@@ -105,19 +116,17 @@ export default function ProductPage() {
   };
 
   const editProduct = async (data: EditProductFormData) => {
-    const { category, name, buy_price, purchase_price } = data;
-
     const request = await EditProduct(
       {
         category: {
           connect: {
-            id: category,
+            id: data.category,
           },
         },
-        name,
-        buy_price: buy_price ? parseCurrency(buy_price) : undefined,
-        purchase_price: purchase_price
-          ? parseCurrency(purchase_price)
+        name: data.name,
+        buy_price: data.buy_price ? parseCurrency(data.buy_price) : undefined,
+        sold_price: data.sold_price
+          ? parseCurrency(data.sold_price)
           : undefined,
       },
       id || '',
@@ -126,14 +135,6 @@ export default function ProductPage() {
     if (request) {
       navigate('/products');
     }
-  };
-
-  const getProduct = async () => {};
-
-  const getCategories = async () => {
-    const request = await GetAllCategories();
-
-    setCategories(request);
   };
 
   const getSelectedCategoryName = () => {
@@ -164,13 +165,10 @@ export default function ProductPage() {
     setValue: (value: string) => void,
   ) => {
     const rawValue = e.target.value;
-
     if (rawValue === '') {
       setValue('');
-
       return;
     }
-
     setValue(formatCurrency(rawValue));
   };
 
@@ -184,7 +182,9 @@ export default function ProductPage() {
 
       <Main>
         <h1 className='mt-2 mb-1 font-semibold'>
-          {pageType === EPageType.create ? 'Criar Produto' : product?.name}
+          {pageType === EPageType.create
+            ? 'Criar Produto'
+            : form.getValues('name') || 'Editar Produto'}
         </h1>
 
         <Form {...form}>
@@ -286,9 +286,7 @@ export default function ProductPage() {
                       <FormControl>
                         <Input
                           {...field}
-                          onChange={(e) => {
-                            handleInputChange(e, field.onChange);
-                          }}
+                          onChange={(e) => handleInputChange(e, field.onChange)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -298,16 +296,14 @@ export default function ProductPage() {
 
                 <FormField
                   control={form.control}
-                  name='purchase_price'
+                  name='sold_price'
                   render={({ field }) => (
                     <FormItem className='w-full'>
                       <FormLabel>Custo</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          onChange={(e) => {
-                            handleInputChange(e, field.onChange);
-                          }}
+                          onChange={(e) => handleInputChange(e, field.onChange)}
                         />
                       </FormControl>
                       <FormMessage />
