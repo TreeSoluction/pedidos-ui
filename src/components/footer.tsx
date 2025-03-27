@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { forwardRef, ReactNode } from 'react';
 
 const footerVariants = cva(
-  'absolute bottom-0 min-h-1/18 w-full rounded-tl-lg rounded-tr-lg p-2 -z-10',
+  'absolute bottom-0 min-h-1/18 w-full rounded-tl-lg rounded-tr-lg p-2 z-10',
   {
     variants: {
       variant: {
