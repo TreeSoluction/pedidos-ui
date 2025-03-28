@@ -99,6 +99,7 @@ export interface DrawerProps
   position?: 'top' | 'bottom' | 'left' | 'right';
   onClose?: () => void;
   title?: string;
+  closeButton?: boolean;
 }
 
 const DrawerComponent = forwardRef<HTMLDivElement, DrawerProps>(
@@ -113,6 +114,7 @@ const DrawerComponent = forwardRef<HTMLDivElement, DrawerProps>(
       children,
       onClose,
       title,
+      closeButton = true,
       ...props
     },
     ref,
@@ -144,9 +146,11 @@ const DrawerComponent = forwardRef<HTMLDivElement, DrawerProps>(
 
           {children}
 
-          <Button type='button' onClick={onClose} className='mt-4 mb-2'>
-            Fechar
-          </Button>
+          {closeButton && (
+            <Button type='button' onClick={onClose} className='mt-4 mb-2'>
+              Fechar
+            </Button>
+          )}
         </div>
       </>
     );

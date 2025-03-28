@@ -108,7 +108,11 @@ export default function ProductsPage() {
           <div>Carregando produtos...</div>
         ) : filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <CardProducts productData={product} key={product.id} />
+            <CardProducts
+              productData={product}
+              key={product.id}
+              navigable={true}
+            />
           ))
         ) : (
           <div>Nenhum produto encontrado</div>
