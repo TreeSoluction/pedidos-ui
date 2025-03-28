@@ -1,4 +1,4 @@
-import { IProduct } from './IProducts';
+import { IProduct, IProductSelected } from './IProducts';
 
 export interface IOrder {
   id: string;
@@ -7,4 +7,10 @@ export interface IOrder {
   createdAt: Date;
   updatedAt: Date;
   items: IProduct[];
+}
+
+export interface ICreateOrder {
+  name?: string;
+  address?: string;
+  items: IProductSelected[];
 }

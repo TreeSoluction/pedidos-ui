@@ -17,6 +17,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { EPageType } from '@/enums/EPageType';
 import { ICategory } from '@/interfaces/ICategories';
@@ -28,9 +35,10 @@ import {
   EditOrderSchema,
 } from '@/schemas/order.schema';
 import { GetAllCategories } from '@/services/category.service';
+import { CreateOrders } from '@/services/order.service';
 import { GetAllProducts } from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleCheck, PackagePlus } from 'lucide-react';
+import { CircleCheck, PackagePlus, ReceiptText } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
@@ -39,7 +47,9 @@ import { toast } from 'sonner';
 export default function RequestPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenSelectedProduct, setIsOpenSelectedProduct] = useState(false);
+  const [categories, setCategories] = useState<IProduct[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [preSelectedProducts, setPreSelectedProducts] =
     useState<IProduct | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<IProductSelected[]>(
@@ -73,7 +83,22 @@ export default function RequestPage() {
       };
     });
 
+    setCategories(categoriesData);
+
     setProducts(enrichedProducts);
+    setFilteredProducts(enrichedProducts);
+  };
+
+  const changeCategory = (e: string) => {
+    if (e === 'all') {
+      setFilteredProducts(products);
+
+      return;
+    }
+
+    const data = products.filter((product) => product.category_id === e);
+
+    setFilteredProducts(data);
   };
 
   const form = useForm<CreateOrderFormData | EditOrderFormData>({
@@ -86,24 +111,48 @@ export default function RequestPage() {
     },
   });
 
-  const createOrder = async (data: CreateOrderFormData) => {};
+  const onSubmit = form.handleSubmit(async (data) => {
+    try {
+      if (pageType === EPageType.create) {
+        await createOrder(data);
+      } else {
+        await editOrder(data);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar pedido:', error);
+      toast.error('Erro ao salvar o pedido.');
+    }
+  });
+
+  const createOrder = async (data: CreateOrderFormData) => {
+    console.log(selectedProducts.length);
+
+    if (selectedProducts.length <= 0) {
+      toast.error('Selecione pelo menos um produto antes de criar.');
+
+      return;
+    }
+
+    const request = await CreateOrders({
+      ...data,
+      items: selectedProducts,
+    });
+
+    if (!request) {
+      toast.error('Não foi possível criar o pedido');
+
+      return;
+    }
+
+    toast.success('Pedido salvo com sucesso!');
+
+    navigate(`/order/${EPageType.edit}/${request.id}`);
+  };
 
   const editOrder = async (data: EditOrderFormData) => {};
 
-  const onSubmit = () =>
-    form.handleSubmit(async (data) => {
-      try {
-        if (pageType === EPageType.create) {
-          await createOrder(data);
-        } else {
-          await editOrder(data);
-        }
-      } catch (error) {
-        console.error('Erro ao salvar pedido:', error);
-      }
-    });
-
   const handleDrawer = () => setIsOpen((s) => !s);
+
   const handleSelectProductDrawer = () => setIsOpenSelectedProduct((s) => !s);
 
   const handleSelectProduct = (product: IProduct) => {
@@ -159,6 +208,131 @@ export default function RequestPage() {
         currency: 'BRL',
       })
     : 'R$ 0,00';
+
+  const findAndPrintReceipt = async () => {
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'],
+      });
+
+      console.log('Dispositivo conectado:', device.name);
+
+      const server = await device.gatt?.connect();
+      if (!server)
+        throw new Error('Não foi possível conectar ao servidor GATT');
+
+      const services = await server.getPrimaryServices();
+      console.log('Serviços encontrados:');
+      services.forEach((service) => {
+        console.log(`- UUID do Serviço: ${service.uuid}`);
+      });
+
+      let foundServiceUUID: string | null = null;
+      let foundCharacteristicUUID: string | null = null;
+
+      for (const service of services) {
+        const characteristics = await service.getCharacteristics();
+        console.log(`Características do serviço ${service.uuid}:`);
+        characteristics.forEach((characteristic) => {
+          console.log(`- UUID da Característica: ${characteristic.uuid}`);
+          console.log(
+            `  Propriedades: ${characteristic.properties.write ? 'Escrita' : ''} ${characteristic.properties.read ? 'Leitura' : ''}`,
+          );
+          if (characteristic.properties.write) {
+            foundServiceUUID = service.uuid;
+            foundCharacteristicUUID = characteristic.uuid;
+          }
+        });
+      }
+
+      if (foundServiceUUID && foundCharacteristicUUID) {
+        console.log(
+          `Encontrado UUID de escrita - Serviço: ${foundServiceUUID}, Característica: ${foundCharacteristicUUID}`,
+        );
+        await printWithFoundUUIDs(
+          device,
+          foundServiceUUID,
+          foundCharacteristicUUID,
+        );
+      } else {
+        throw new Error('Nenhuma característica de escrita encontrada.');
+      }
+
+      await server.disconnect();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error('Erro:', error);
+      alert(
+        `Erro ao buscar ou imprimir: ${errorMessage}. Veja o console para os UUIDs encontrados.`,
+      );
+    }
+  };
+
+  const printWithFoundUUIDs = async (
+    device: BluetoothDevice,
+    serviceUUID: string,
+    characteristicUUID: string,
+  ) => {
+    try {
+      const server = await device.gatt?.connect();
+      const service = await server?.getPrimaryService(serviceUUID);
+      if (!service) throw new Error('Serviço não encontrado');
+
+      const characteristic =
+        await service.getCharacteristic(characteristicUUID);
+      if (!characteristic) throw new Error('Característica não encontrada');
+
+      let receipt = '';
+      receipt += '    PEDIDO - LANCHONETE    \n';
+      receipt += '----------------------------\n';
+      receipt += `Nome: ${form.getValues('name')}\n`;
+      receipt += `Endereco: ${form.getValues('address')}\n`;
+      selectedProducts.forEach((item, index) => {
+        receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
+        receipt += `    Qtde: ${item.quantity}\n`;
+        if (item.observation)
+          receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
+        receipt += '----------------------------\n';
+      });
+      receipt += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
+      receipt += '\n\n\n';
+
+      const encoder = new TextEncoder();
+      const header = encoder.encode('\x1B\x40');
+      const footer = encoder.encode('\x1D\x56\x00');
+
+      const receiptData = encoder.encode(receipt);
+      const chunkSize = 256 - header.length - footer.length;
+      const delay = 50;
+
+      async function sendChunkWithDelay(
+        characteristic: BluetoothRemoteGATTCharacteristic,
+        chunk: Uint8Array<ArrayBuffer>,
+      ) {
+        await characteristic.writeValue(chunk);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+
+      await characteristic.writeValue(header);
+
+      for (let i = 0; i < receiptData.length; i += chunkSize) {
+        const chunk = receiptData.slice(i, i + chunkSize);
+        await sendChunkWithDelay(characteristic, chunk);
+      }
+
+      await characteristic.writeValue(footer);
+
+      console.log('Impresso com sucesso usando os UUIDs encontrados!');
+      await server?.disconnect();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error('Erro ao imprimir com UUIDs encontrados:', error);
+      alert(`Erro ao imprimir: ${errorMessage}`);
+    }
+  };
 
   return (
     <>
@@ -233,15 +407,47 @@ export default function RequestPage() {
               <h3 className='text-base font-medium'>Selecione um produto</h3>
             </div>
 
+            <div className='rounded-md border p-2'>
+              <Label htmlFor='category' className='text-muted-foreground mb-1'>
+                Categorias
+              </Label>
+              <Select
+                onValueChange={(e) => changeCategory(e)}
+                defaultValue='all'
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Categoria' />
+                </SelectTrigger>
+                <SelectContent id='category'>
+                  <SelectItem value='all'>Todos</SelectItem>
+
+                  {categories.map((category) => (
+                    <SelectItem value={category.id} key={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className='h-[400px] overflow-scroll'>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <Fragment key={product.id}>
                   <div
                     onClick={() => {
                       handleSelectProduct(product);
                     }}
+                    className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
                   >
-                    {product.name}
+                    <div className='flex flex-col'>
+                      <span className='font-semibold text-gray-800'>
+                        {product.name}
+                      </span>
+                      <span className='text-muted-foreground text-sm'>
+                        {product.category.name}
+                      </span>
+                    </div>
+                    <span className='text-sm text-gray-500'>Selecionar</span>
                   </div>
                 </Fragment>
               ))}
@@ -337,7 +543,18 @@ export default function RequestPage() {
           </Button>
         )}
 
-        {pageType === EPageType.edit && <></>}
+        {pageType === EPageType.edit && (
+          <>
+            <Button
+              type='submit'
+              variant='success'
+              className='h-full w-full'
+              onClick={findAndPrintReceipt}
+            >
+              <ReceiptText className='mr-2' /> Imprimir
+            </Button>
+          </>
+        )}
       </Footer>
     </>
   );

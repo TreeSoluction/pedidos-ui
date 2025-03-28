@@ -1,3 +1,4 @@
+import { ICreateOrder } from '@/interfaces/IOrders';
 import api from './index';
 
 export const GetAllOrders = async () => {
@@ -8,6 +9,12 @@ export const GetAllOrders = async () => {
 
 export const GetOrderById = async (id: string) => {
   const request = await api.get(`orders/${id}`);
+
+  return request.data;
+};
+
+export const CreateOrders = async (data: ICreateOrder) => {
+  const request = await api.post('orders', data);
 
   return request.data;
 };

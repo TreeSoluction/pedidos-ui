@@ -77,6 +77,11 @@ export const CardProductsWithDetails = memo(
             <p className='text-muted-foreground text-sm'>
               {productData.category.name}
             </p>
+            {productData.observation && (
+              <p className='text-muted-foreground text-sm'>
+                Obs: {productData.observation}
+              </p>
+            )}
             <div className='mt-2 flex items-center justify-between'>
               <span className='text-sm'>
                 {quantity} x {formattedPrice}
