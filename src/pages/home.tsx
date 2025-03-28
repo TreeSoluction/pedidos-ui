@@ -22,7 +22,7 @@ export default function HomePage() {
             </Button>
           </Link>
 
-          <Link to={'requests'}>
+          <Link to={'orders'}>
             <Button>
               <ChefHat />
               Pedidos
