@@ -3,6 +3,14 @@ import { Footer } from '@/components/footer';
 import { Main } from '@/components/main';
 import { CardOrders } from '@/components/orders/card';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -24,6 +32,8 @@ export default function OrdersPage() {
   const [filteredOrders, setFilteredOrders] = useState<IOrder[]>([]);
   const [searchName, setSearchName] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('all');
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,11 +82,16 @@ export default function OrdersPage() {
   };
 
   const deleteOrder = async (id: string) => {
-    const request = await DeleteOrders(id);
+    await DeleteOrders(id);
+    await getAllOrders();
 
-    if (request) {
-      await getAllOrders();
-    }
+    setIsDialogOpen(false);
+    setOrderToDelete(null);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setOrderToDelete(id);
+    setIsDialogOpen(true);
   };
 
   return (
@@ -117,9 +132,7 @@ export default function OrdersPage() {
               orderData={order}
               key={order.id}
               navigable={true}
-              onRemove={() => {
-                deleteOrder(order.id);
-              }}
+              onRemove={() => handleDeleteClick(order.id)}
             />
           ))
         ) : (
@@ -138,6 +151,30 @@ export default function OrdersPage() {
           </Link>
         </div>
       </Footer>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Você tem certeza?</DialogTitle>
+            <DialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente o
+              pedido selecionado.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant='outline' onClick={() => setIsDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant='destructive'
+              onClick={() => orderToDelete && deleteOrder(orderToDelete)}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
