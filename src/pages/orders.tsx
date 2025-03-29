@@ -76,7 +76,6 @@ export default function OrdersPage() {
       <BackButton />
 
       <Main className='flex flex-col gap-4 p-4'>
-        {/* Filtros */}
         <div className='flex flex-col gap-4 md:flex-row md:items-center md:gap-6'>
           <div className='flex-1'>
             <Input
@@ -100,14 +99,13 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Lista de Pedidos */}
         {isLoading ? (
           <div className='text-muted-foreground text-center'>
             Carregando pedidos...
           </div>
         ) : filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <CardOrders orderData={order} key={order.id} />
+            <CardOrders orderData={order} key={order.id} navigable={true} />
           ))
         ) : (
           <div className='text-muted-foreground text-center'>

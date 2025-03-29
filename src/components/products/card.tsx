@@ -30,11 +30,6 @@ export const CardProducts = memo(
           role={navigable ? 'button' : undefined}
           tabIndex={navigable ? 0 : undefined}
           onClick={handleClick}
-          onKeyDown={(e) => {
-            if (navigable && (e.key === 'Enter' || e.key === ' ')) {
-              productClicked();
-            }
-          }}
         >
           <div className='flex flex-col'>
             <h2 className='font-semibold'>{productData.name}</h2>
