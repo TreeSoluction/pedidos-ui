@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { BackButton } from '@/components/back';
 import { Drawer } from '@/components/drawer';
 import { Footer } from '@/components/footer';
@@ -35,7 +37,7 @@ import {
   EditOrderSchema,
 } from '@/schemas/order.schema';
 import { GetAllCategories } from '@/services/category.service';
-import { CreateOrders } from '@/services/order.service';
+import { CreateOrders, GetOrderById } from '@/services/order.service';
 import { GetAllProducts } from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck, PackagePlus, ReceiptText } from 'lucide-react';
@@ -47,7 +49,7 @@ import { toast } from 'sonner';
 export default function RequestPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenSelectedProduct, setIsOpenSelectedProduct] = useState(false);
-  const [categories, setCategories] = useState<IProduct[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [preSelectedProducts, setPreSelectedProducts] =
@@ -67,7 +69,17 @@ export default function RequestPage() {
     };
 
     fetchData();
-  }, []);
+  }, [pageType, id]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (pageType === EPageType.edit && id) {
+        await getOrderById(id);
+      }
+    };
+
+    fetchData();
+  }, [products]);
 
   const getAllProducts = async () => {
     const categoriesData = await GetAllCategories();
@@ -150,6 +162,43 @@ export default function RequestPage() {
   };
 
   const editOrder = async (data: EditOrderFormData) => {};
+
+  const getOrderById = async (orderId: string) => {
+    try {
+      const order = await GetOrderById(orderId);
+      if (!order) {
+        toast.error('Pedido não encontrado');
+        return;
+      }
+
+      form.reset({
+        name: order.name || '',
+        address: order.address || '',
+      });
+
+      const enrichedItems = order.items
+        .map((item: any) => {
+          const product = products.find((p) => p.id === item.product_id);
+          if (!product) {
+            return null;
+          }
+          return {
+            ...product,
+            quantity: item.quantity || 1,
+            observation: item.observation || '',
+            buy_price: item.buy_price,
+          } as IProductSelected;
+        })
+        .filter(
+          (item: IProductSelected): item is IProductSelected => item !== null,
+        );
+
+      setSelectedProducts(enrichedItems);
+    } catch (error) {
+      console.error('Erro ao carregar pedido:', error);
+      toast.error('Erro ao carregar os dados do pedido');
+    }
+  };
 
   const handleDrawer = () => setIsOpen((s) => !s);
 

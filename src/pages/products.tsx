@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { BackButton } from '@/components/back';
 import { Footer } from '@/components/footer';
 import { Main } from '@/components/main';
