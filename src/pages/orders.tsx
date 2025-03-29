@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { EPageType } from '@/enums/EPageType';
 import { IOrder } from '@/interfaces/IOrders';
-import { GetAllOrders } from '@/services/order.service';
+import { DeleteOrders, GetAllOrders } from '@/services/order.service';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
@@ -71,6 +71,14 @@ export default function OrdersPage() {
     setFilteredOrders(request);
   };
 
+  const deleteOrder = async (id: string) => {
+    const request = await DeleteOrders(id);
+
+    if (request) {
+      await getAllOrders();
+    }
+  };
+
   return (
     <>
       <BackButton />
@@ -105,7 +113,14 @@ export default function OrdersPage() {
           </div>
         ) : filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <CardOrders orderData={order} key={order.id} navigable={true} />
+            <CardOrders
+              orderData={order}
+              key={order.id}
+              navigable={true}
+              onRemove={() => {
+                deleteOrder(order.id);
+              }}
+            />
           ))
         ) : (
           <div className='text-muted-foreground text-center'>

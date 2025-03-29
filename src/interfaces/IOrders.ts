@@ -14,3 +14,9 @@ export interface ICreateOrder {
   address?: string;
   items: IProductSelected[];
 }
+
+export interface IEditOrder {
+  name?: string;
+  address?: string;
+  items: IProductSelected[];
+}

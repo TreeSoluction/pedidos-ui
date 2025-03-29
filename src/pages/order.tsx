@@ -127,8 +127,6 @@ export default function RequestPage() {
     try {
       if (pageType === EPageType.create) {
         await createOrder(data);
-      } else {
-        await editOrder(data);
       }
     } catch (error) {
       console.error('Erro ao salvar pedido:', error);
@@ -137,8 +135,6 @@ export default function RequestPage() {
   });
 
   const createOrder = async (data: CreateOrderFormData) => {
-    console.log(selectedProducts.length);
-
     if (selectedProducts.length <= 0) {
       toast.error('Selecione pelo menos um produto antes de criar.');
 
@@ -160,8 +156,6 @@ export default function RequestPage() {
 
     navigate(`/order/${EPageType.edit}/${request.id}`);
   };
-
-  const editOrder = async (data: EditOrderFormData) => {};
 
   const getOrderById = async (orderId: string) => {
     try {
@@ -441,68 +435,73 @@ export default function RequestPage() {
           </div>
         )}
 
-        <div>
-          <button className='absolute right-2 bottom-18 rounded-full bg-green-500 p-2'>
-            <PackagePlus onClick={handleDrawer} />
-          </button>
+        {pageType === EPageType.create && (
+          <div>
+            <button className='absolute right-2 bottom-18 rounded-full bg-green-500 p-2'>
+              <PackagePlus onClick={handleDrawer} />
+            </button>
 
-          <Drawer
-            open={isOpen}
-            position='bottom'
-            onClose={handleDrawer}
-            variant='secondary'
-          >
-            <div className='mb-4'>
-              <h3 className='text-base font-medium'>Selecione um produto</h3>
-            </div>
+            <Drawer
+              open={isOpen}
+              position='bottom'
+              onClose={handleDrawer}
+              variant='secondary'
+            >
+              <div className='mb-4'>
+                <h3 className='text-base font-medium'>Selecione um produto</h3>
+              </div>
 
-            <div className='rounded-md border p-2'>
-              <Label htmlFor='category' className='text-muted-foreground mb-1'>
-                Categorias
-              </Label>
-              <Select
-                onValueChange={(e) => changeCategory(e)}
-                defaultValue='all'
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='Categoria' />
-                </SelectTrigger>
-                <SelectContent id='category'>
-                  <SelectItem value='all'>Todos</SelectItem>
+              <div className='rounded-md border p-2'>
+                <Label
+                  htmlFor='category'
+                  className='text-muted-foreground mb-1'
+                >
+                  Categorias
+                </Label>
+                <Select
+                  onValueChange={(e) => changeCategory(e)}
+                  defaultValue='all'
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Categoria' />
+                  </SelectTrigger>
+                  <SelectContent id='category'>
+                    <SelectItem value='all'>Todos</SelectItem>
 
-                  {categories.map((category) => (
-                    <SelectItem value={category.id} key={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                    {categories.map((category) => (
+                      <SelectItem value={category.id} key={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className='h-[400px] overflow-scroll'>
-              {filteredProducts.map((product) => (
-                <Fragment key={product.id}>
-                  <div
-                    onClick={() => {
-                      handleSelectProduct(product);
-                    }}
-                    className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
-                  >
-                    <div className='flex flex-col'>
-                      <span className='font-semibold text-gray-800'>
-                        {product.name}
-                      </span>
-                      <span className='text-muted-foreground text-sm'>
-                        {product.category.name}
-                      </span>
+              <div className='h-[400px] overflow-scroll'>
+                {filteredProducts.map((product) => (
+                  <Fragment key={product.id}>
+                    <div
+                      onClick={() => {
+                        handleSelectProduct(product);
+                      }}
+                      className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
+                    >
+                      <div className='flex flex-col'>
+                        <span className='font-semibold text-gray-800'>
+                          {product.name}
+                        </span>
+                        <span className='text-muted-foreground text-sm'>
+                          {product.category.name}
+                        </span>
+                      </div>
+                      <span className='text-sm text-gray-500'>Selecionar</span>
                     </div>
-                    <span className='text-sm text-gray-500'>Selecionar</span>
-                  </div>
-                </Fragment>
-              ))}
-            </div>
-          </Drawer>
-        </div>
+                  </Fragment>
+                ))}
+              </div>
+            </Drawer>
+          </div>
+        )}
 
         <Drawer
           open={isOpenSelectedProduct}

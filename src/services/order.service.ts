@@ -18,3 +18,9 @@ export const CreateOrders = async (data: ICreateOrder) => {
 
   return request.data;
 };
+
+export const DeleteOrders = async (id: string) => {
+  const request = await api.delete(`orders/${id}`);
+
+  return request.data;
+};
