@@ -40,7 +40,7 @@ import { GetAllCategories } from '@/services/category.service';
 import { CreateOrders, GetOrderById } from '@/services/order.service';
 import { GetAllProducts } from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleCheck, PackagePlus, ReceiptText } from 'lucide-react';
+import { CircleCheck, HandPlatter, ReceiptText } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
@@ -437,8 +437,9 @@ export default function RequestPage() {
 
         {pageType === EPageType.create && (
           <div>
-            <button className='absolute right-2 bottom-18 rounded-full bg-green-500 p-2'>
-              <PackagePlus onClick={handleDrawer} />
+            <button className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'>
+              <HandPlatter onClick={handleDrawer} />
+              <div>Adicionar produto</div>
             </button>
 
             <Drawer
