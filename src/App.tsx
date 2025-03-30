@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 import HomePage from './pages/home';
 import OrderPage from './pages/order';
@@ -7,6 +8,22 @@ import ProductsPage from './pages/products';
 import ReportsPage from './pages/reports';
 
 export default function App() {
+  useEffect(() => {
+    const preventPullToRefresh = (event: any) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('touchmove', preventPullToRefresh, {
+      passive: false,
+    });
+
+    return () => {
+      document.removeEventListener('touchmove', preventPullToRefresh);
+    };
+  }, []);
+
   return (
     <Routes>
       <Route index element={<HomePage />} />
