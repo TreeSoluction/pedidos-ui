@@ -31,7 +31,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<IOrder[] | undefined>(undefined);
   const [filteredOrders, setFilteredOrders] = useState<IOrder[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('today');
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
