@@ -55,7 +55,7 @@ export const CardOrders = memo(
                     className='text-red-500 hover:text-red-700'
                     aria-label={`Remover pedido ${orderData.name}`}
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={24} />
                   </button>
                 )}
               </div>
