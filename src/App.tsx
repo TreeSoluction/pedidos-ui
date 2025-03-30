@@ -13,6 +13,7 @@ export default function App() {
 
     document.body.style.overscrollBehavior = 'none';
 
+    // Evita pull-to-refresh especificamente
     document.addEventListener('touchstart', preventDefault, { passive: false });
 
     return () => {
