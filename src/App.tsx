@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 import HomePage from './pages/home';
 import OrderPage from './pages/order';
@@ -7,6 +8,19 @@ import ProductsPage from './pages/products';
 import ReportsPage from './pages/reports';
 
 export default function App() {
+  useEffect(() => {
+    const preventDefault = (event) => event.preventDefault();
+
+    document.body.style.overscrollBehavior = 'none';
+
+    document.addEventListener('touchstart', preventDefault, { passive: false });
+
+    return () => {
+      document.body.style.overscrollBehavior = '';
+      document.removeEventListener('touchstart', preventDefault);
+    };
+  }, []);
+
   return (
     <Routes>
       <Route index element={<HomePage />} />
