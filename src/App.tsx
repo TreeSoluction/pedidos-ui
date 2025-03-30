@@ -9,7 +9,7 @@ import ReportsPage from './pages/reports';
 
 export default function App() {
   useEffect(() => {
-    const preventDefault = (event) => event.preventDefault();
+    const preventDefault = (event: any) => event.preventDefault();
 
     document.body.style.overscrollBehavior = 'none';
 
