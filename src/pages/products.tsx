@@ -4,6 +4,7 @@ import { Footer } from '@/components/footer';
 import { Main } from '@/components/main';
 import { CardProducts } from '@/components/products/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -26,12 +27,12 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
         await getAllProducts();
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -62,22 +63,27 @@ export default function ProductsPage() {
 
   const getAllCategories = async (): Promise<ICategory[]> => {
     const request = await GetAllCategories();
-
     setCategories(request);
-
     return request;
   };
 
   const changeCategory = (e: string) => {
     if (e === 'all') {
       setFilteredProducts(products);
-
-      return;
+    } else {
+      const data = products.filter((product) => product.category_id === e);
+      setFilteredProducts(data);
     }
+  };
 
-    const data = products.filter((product) => product.category_id === e);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
 
-    setFilteredProducts(data);
+    const searchedProducts = products.filter((product) =>
+      product.name.toLowerCase().includes(term),
+    );
+    setFilteredProducts(searchedProducts);
   };
 
   return (
@@ -95,7 +101,6 @@ export default function ProductsPage() {
             </SelectTrigger>
             <SelectContent id='category'>
               <SelectItem value='all'>Todos</SelectItem>
-
               {categories.map((category) => (
                 <SelectItem value={category.id} key={category.id}>
                   {category.name}
@@ -103,6 +108,18 @@ export default function ProductsPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className='rounded-md border p-2'>
+          <Label htmlFor='search' className='text-muted-foreground mb-1'>
+            Buscar por nome
+          </Label>
+          <Input
+            id='search'
+            placeholder='Digite o nome do lanche...'
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
 
         {isLoading ? (

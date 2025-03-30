@@ -54,6 +54,7 @@ export default function RequestPage() {
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [preSelectedProducts, setPreSelectedProducts] =
     useState<IProduct | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [selectedProducts, setSelectedProducts] = useState<IProductSelected[]>(
     () => {
@@ -375,6 +376,16 @@ export default function RequestPage() {
     }
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    const searchedProducts = products.filter((product) =>
+      product.name.toLowerCase().includes(term),
+    );
+    setFilteredProducts(searchedProducts);
+  };
+
   return (
     <>
       <BackButton />
@@ -477,6 +488,18 @@ export default function RequestPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className='rounded-md border p-2'>
+                <Label htmlFor='search' className='text-muted-foreground mb-1'>
+                  Buscar por nome
+                </Label>
+                <Input
+                  id='search'
+                  placeholder='Digite o nome do lanche...'
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
               </div>
 
               <div className='h-[400px] overflow-scroll'>
