@@ -54,20 +54,42 @@ export default function RequestPage() {
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [preSelectedProducts, setPreSelectedProducts] =
     useState<IProduct | null>(null);
+
   const [selectedProducts, setSelectedProducts] = useState<IProductSelected[]>(
-    [],
+    () => {
+      const cachedProducts = localStorage.getItem('selectedProducts');
+      return cachedProducts ? JSON.parse(cachedProducts) : [];
+    },
   );
-  const [quantity, setQuantity] = useState<number>(1);
-  const [observation, setObservation] = useState<string>('');
+
+  const [quantity, setQuantity] = useState<number>(() => {
+    const cachedQuantity = localStorage.getItem('quantity');
+    return cachedQuantity ? JSON.parse(cachedQuantity) : 1;
+  });
+
+  const [observation, setObservation] = useState<string>(() => {
+    return localStorage.getItem('observation') || '';
+  });
 
   const { pageType, id } = useParams<{ pageType: EPageType; id?: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
+    localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+  }, [selectedProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('quantity', JSON.stringify(quantity));
+  }, [quantity]);
+
+  useEffect(() => {
+    localStorage.setItem('observation', observation);
+  }, [observation]);
+
+  useEffect(() => {
     const fetchData = async () => {
       await getAllProducts();
     };
-
     fetchData();
   }, [pageType, id]);
 
@@ -77,26 +99,19 @@ export default function RequestPage() {
         await getOrderById(id);
       }
     };
-
     fetchData();
   }, [products]);
 
   const getAllProducts = async () => {
     const categoriesData = await GetAllCategories();
     const request = await GetAllProducts();
-
     const enrichedProducts = request.map((product: IProduct) => {
       const category = categoriesData.find(
         (cat: ICategory) => cat.id === product.category_id,
       );
-      return {
-        ...product,
-        category: category || null,
-      };
+      return { ...product, category: category || null };
     });
-
     setCategories(categoriesData);
-
     setProducts(enrichedProducts);
     setFilteredProducts(enrichedProducts);
   };
@@ -104,13 +119,11 @@ export default function RequestPage() {
   const changeCategory = (e: string) => {
     if (e === 'all') {
       setFilteredProducts(products);
-
       return;
     }
-
-    const data = products.filter((product) => product.category_id === e);
-
-    setFilteredProducts(data);
+    setFilteredProducts(
+      products.filter((product) => product.category_id === e),
+    );
   };
 
   const form = useForm<CreateOrderFormData | EditOrderFormData>({
@@ -137,23 +150,15 @@ export default function RequestPage() {
   const createOrder = async (data: CreateOrderFormData) => {
     if (selectedProducts.length <= 0) {
       toast.error('Selecione pelo menos um produto antes de criar.');
-
       return;
     }
-
-    const request = await CreateOrders({
-      ...data,
-      items: selectedProducts,
-    });
-
+    const request = await CreateOrders({ ...data, items: selectedProducts });
     if (!request) {
       toast.error('Não foi possível criar o pedido');
-
       return;
     }
-
     toast.success('Pedido salvo com sucesso!');
-
+    clearCache();
     navigate(`/order/${EPageType.edit}/${request.id}`);
   };
 
@@ -164,29 +169,23 @@ export default function RequestPage() {
         toast.error('Pedido não encontrado');
         return;
       }
-
       form.reset({
         name: order.name || '',
         address: order.address || '',
       });
-
       const enrichedItems = order.items
         .map((item: any) => {
           const product = products.find((p) => p.id === item.product_id);
-          if (!product) {
-            return null;
-          }
-          return {
-            ...product,
-            quantity: item.quantity || 1,
-            observation: item.observation || '',
-            buy_price: item.buy_price,
-          } as IProductSelected;
+          return product
+            ? ({
+                ...product,
+                quantity: item.quantity || 1,
+                observation: item.observation || '',
+                buy_price: item.buy_price,
+              } as IProductSelected)
+            : null;
         })
-        .filter(
-          (item: IProductSelected): item is IProductSelected => item !== null,
-        );
-
+        .filter((item): item is IProductSelected => item !== null);
       setSelectedProducts(enrichedItems);
     } catch (error) {
       console.error('Erro ao carregar pedido:', error);
@@ -195,7 +194,6 @@ export default function RequestPage() {
   };
 
   const handleDrawer = () => setIsOpen((s) => !s);
-
   const handleSelectProductDrawer = () => setIsOpenSelectedProduct((s) => !s);
 
   const handleSelectProduct = (product: IProduct) => {
@@ -209,18 +207,12 @@ export default function RequestPage() {
   const addSelectedProduct = () => {
     if (!preSelectedProducts) {
       toast('Selecione um produto antes de adicionar.');
-
       return;
     }
-
-    const data: IProductSelected = {
-      ...preSelectedProducts,
-      observation,
-      quantity,
-    };
-
-    setSelectedProducts((s) => [...s, data]);
-
+    setSelectedProducts((s) => [
+      ...s,
+      { ...preSelectedProducts, observation, quantity },
+    ]);
     setPreSelectedProducts(null);
     setQuantity(1);
     setObservation('');
@@ -236,6 +228,12 @@ export default function RequestPage() {
     setQuantity(1);
     setObservation('');
     setIsOpenSelectedProduct(false);
+  };
+
+  const clearCache = () => {
+    localStorage.removeItem('selectedProducts');
+    localStorage.removeItem('quantity');
+    localStorage.removeItem('observation');
   };
 
   const totalPrice = preSelectedProducts
@@ -437,8 +435,11 @@ export default function RequestPage() {
 
         {pageType === EPageType.create && (
           <div>
-            <button className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'>
-              <HandPlatter onClick={handleDrawer} />
+            <button
+              onClick={handleDrawer}
+              className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'
+            >
+              <HandPlatter />
               <div>Adicionar produto</div>
             </button>
 
