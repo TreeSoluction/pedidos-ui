@@ -185,7 +185,7 @@ export default function RequestPage() {
               } as IProductSelected)
             : null;
         })
-        .filter((item): item is IProductSelected => item !== null);
+        .filter((item: any): item is IProductSelected => item !== null);
       setSelectedProducts(enrichedItems);
     } catch (error) {
       console.error('Erro ao carregar pedido:', error);
