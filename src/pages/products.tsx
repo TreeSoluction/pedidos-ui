@@ -88,7 +88,7 @@ export default function ProductsPage() {
 
   return (
     <>
-      <BackButton />
+      <BackButton to='/' />
 
       <Main className='flex flex-col gap-2'>
         <div className='rounded-md border p-2'>

@@ -178,7 +178,7 @@ export default function ProductPage() {
 
   return (
     <>
-      <BackButton />
+      <BackButton to='/products' />
 
       <Main>
         <h1 className='mt-2 mb-1 font-semibold'>

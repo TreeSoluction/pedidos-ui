@@ -96,7 +96,7 @@ export default function OrdersPage() {
 
   return (
     <>
-      <BackButton />
+      <BackButton to='/' />
 
       <Main className='flex flex-col gap-4 p-4'>
         <div className='flex flex-col gap-4 md:flex-row md:items-center md:gap-6'>

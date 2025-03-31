@@ -9,18 +9,10 @@ import ReportsPage from './pages/reports';
 
 export default function App() {
   useEffect(() => {
-    const preventPullToRefresh = (event: TouchEvent) => {
-      if (window.scrollY === 0) {
-        event.preventDefault();
-      }
-    };
-
-    document.addEventListener('touchmove', preventPullToRefresh, {
-      passive: false,
-    });
+    document.body.style.overscrollBehaviorY = 'contain';
 
     return () => {
-      document.removeEventListener('touchmove', preventPullToRefresh);
+      document.body.style.overscrollBehaviorY = 'auto';
     };
   }, []);
 

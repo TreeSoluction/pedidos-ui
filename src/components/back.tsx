@@ -2,15 +2,23 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Button } from './ui/button';
 
-export function BackButton() {
+type BackButtonProps = {
+  to?: string;
+};
+
+export function BackButton({ to }: BackButtonProps) {
   const navigate = useNavigate();
 
-  const returnToBack = () => {
-    navigate(-1);
+  const handleClick = () => {
+    if (to) {
+      navigate(to);
+    } else {
+      navigate(-1);
+    }
   };
 
   return (
-    <Button onClick={returnToBack} className='m-2'>
+    <Button onClick={handleClick} className='m-2'>
       <ArrowLeft size={32} />
       Voltar
     </Button>
