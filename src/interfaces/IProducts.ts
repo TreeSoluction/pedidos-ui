@@ -1,4 +1,5 @@
 import { ICategory } from './ICategories';
+import { IIngredientInProduct } from './IIngredients';
 
 export interface IProduct {
   id: string;
@@ -25,23 +26,17 @@ export interface IProductSelected extends IProduct {
 }
 
 export interface ICreateProduct {
-  category: {
-    connect: {
-      id: string;
-    };
-  };
+  category: string;
   name: string;
   sold_price?: number;
   buy_price?: number;
+  ingredients: IIngredientInProduct[];
 }
 
 export interface IEditProduct {
-  category: {
-    connect: {
-      id: string;
-    };
-  };
+  category: string;
   name: string;
   sold_price?: number;
   buy_price?: number;
+  ingredients: IIngredientInProduct[];
 }

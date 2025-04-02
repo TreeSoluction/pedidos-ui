@@ -14,13 +14,49 @@ export const GetProductById = async (id: string) => {
 };
 
 export const CreateProduct = async (data: ICreateProduct) => {
-  const request = await api.post('products', data);
+  const ingredients: {
+    ingredient_id: string;
+    quantity: number;
+  }[] = data.ingredients.map((ingredient) => {
+    return {
+      ingredient_id: ingredient.id,
+      quantity: ingredient.quantity,
+    };
+  });
+
+  const request = await api.post('products', {
+    ...data,
+    product_ingredients: {
+      create: ingredients,
+    },
+    category: {
+      connect: {
+        id: data.category,
+      },
+    },
+    ingredients: undefined,
+  });
 
   return request.data;
 };
 
 export const EditProduct = async (data: IEditProduct, id: string) => {
-  const request = await api.put(`products/${id}`, data);
+  const ingredients: {
+    product_ingredients: string;
+    quantity: number;
+  }[] = data.ingredients.map((ingredient) => {
+    return {
+      product_ingredients: ingredient.id,
+      quantity: ingredient.quantity,
+    };
+  });
+
+  const request = await api.put(`products/${id}`, {
+    ...data,
+    product_ingredients: {
+      connect: ingredients,
+    },
+  });
 
   return request.data;
 };

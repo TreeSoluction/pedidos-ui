@@ -7,6 +7,10 @@ export interface IIngredient {
   product_ingredients: IProductIngredients[];
 }
 
+export interface IIngredientInProduct extends IIngredient {
+  quantity: number;
+}
+
 export interface ICreateIngredient {
   name: string;
   sold_price: number;

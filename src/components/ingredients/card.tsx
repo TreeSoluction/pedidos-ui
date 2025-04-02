@@ -1,5 +1,5 @@
 import { EPageType } from '@/enums/EPageType';
-import { IIngredient } from '@/interfaces/IIngredients';
+import { IIngredient, IIngredientInProduct } from '@/interfaces/IIngredients';
 import { Trash2 } from 'lucide-react';
 import { forwardRef, HTMLProps, memo, MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
@@ -67,3 +67,65 @@ export const CardIngredients = memo(
     },
   ),
 );
+
+import { useState } from 'react';
+
+interface QuantityInputProps {
+  ingredient: IIngredientInProduct;
+  onQuantityChange: (id: string, quantity: number) => void;
+  onRemoveIngredient: (id: string) => void;
+}
+
+export const QuantityInput: React.FC<QuantityInputProps> = ({
+  ingredient,
+  onQuantityChange,
+  onRemoveIngredient,
+}) => {
+  const [quantity, setQuantity] = useState<number | ''>(0);
+
+  const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value =
+      event.target.value === ''
+        ? ''
+        : Math.max(0, parseFloat(event.target.value));
+
+    setQuantity(value);
+    onQuantityChange(ingredient.id, value || 0);
+  };
+
+  const totalCost = ((quantity || 0) / 1000) * ingredient.sold_price;
+
+  return (
+    <div className='flex flex-col gap-2 rounded-lg border p-4 shadow'>
+      <div className='flex items-center justify-between'>
+        <h3 className='text-lg font-semibold'>{ingredient.name}</h3>
+
+        <button
+          onClick={() => onRemoveIngredient(ingredient.id)}
+          className='text-red-500 hover:text-red-700'
+        >
+          <Trash2 />
+        </button>
+      </div>
+      <label className='text-sm font-medium'>
+        Quantidade por (g):
+        <input
+          type='number'
+          min='0'
+          value={quantity}
+          onChange={handleQuantityChange}
+          className='ml-2 w-24 rounded border p-1'
+        />
+      </label>
+      <p className='text-sm text-gray-600'>
+        Custo total:{' '}
+        <strong>
+          {new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(totalCost)}
+        </strong>
+      </p>
+    </div>
+  );
+};
