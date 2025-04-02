@@ -447,9 +447,9 @@ export default function RequestPage() {
               <CardProductsWithDetails
                 productData={product}
                 key={index}
-                onRemove={() => {
-                  removeSelectedProduct(index);
-                }}
+                {...(pageType !== EPageType.edit && {
+                  onRemove: () => removeSelectedProduct(index),
+                })}
               />
             ))}
           </div>
