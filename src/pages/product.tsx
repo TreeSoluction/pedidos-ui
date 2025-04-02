@@ -87,12 +87,51 @@ export default function ProductPage() {
               category: product.category_id || '',
               name: product.name || '',
               buy_price: product.buy_price
-                ? formatCurrency((product.buy_price * 100).toString())
+                ? formatCurrency(product.buy_price * 100)
                 : '',
               sold_price: product.sold_price
-                ? formatCurrency((product.sold_price * 100).toString())
+                ? formatCurrency(product.sold_price * 100)
                 : '',
             });
+
+            const productIngredients = product.product_ingredients || [];
+            const selectedIngredients = productIngredients.map(
+              (productIngredient: {
+                ingredient_id: string;
+                quantity: number;
+              }) => {
+                const ingredient = ingredientsData.find(
+                  (ingredient: { id: string }) =>
+                    ingredient.id === productIngredient.ingredient_id,
+                );
+                return {
+                  ...ingredient,
+                  quantity: productIngredient.quantity,
+                };
+              },
+            );
+
+            setSelectedIngredients(selectedIngredients);
+
+            setIngredients((prev) =>
+              prev.filter(
+                (ingredient) =>
+                  !productIngredients.some(
+                    (productIngredient: { ingredient_id: string }) =>
+                      productIngredient.ingredient_id === ingredient.id,
+                  ),
+              ),
+            );
+
+            setFilteredIngredients((prev) =>
+              prev.filter(
+                (ingredient) =>
+                  !productIngredients.some(
+                    (productIngredient: { ingredient_id: string }) =>
+                      productIngredient.ingredient_id === ingredient.id,
+                  ),
+              ),
+            );
           }
         }
       } catch (error) {
@@ -181,9 +220,8 @@ export default function ProductPage() {
 
   const handleIngredientsDrawer = () => setIngredientsIsOpen((s) => !s);
 
-  const formatCurrency = (value: string) => {
-    const number = parseFloat(value.replace(/\D/g, '')) / 100;
-    return number.toLocaleString('pt-BR', {
+  const formatCurrency = (value: number) => {
+    return (value / 100).toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     });
@@ -194,11 +232,17 @@ export default function ProductPage() {
     setValue: (value: string) => void,
   ) => {
     const rawValue = e.target.value;
+
     if (rawValue === '') {
       setValue('');
       return;
     }
-    setValue(formatCurrency(rawValue));
+
+    const numericValue = parseFloat(rawValue.replace(/\D/g, ''));
+
+    if (!isNaN(numericValue)) {
+      setValue(formatCurrency(numericValue));
+    }
   };
 
   const parseCurrency = (value: string) => {
@@ -363,7 +407,7 @@ export default function ProductPage() {
               <div className='flex w-full gap-2'>
                 <FormField
                   control={form.control}
-                  name='buy_price'
+                  name='sold_price'
                   render={({ field }) => (
                     <FormItem className='w-full'>
                       <FormLabel>Preço</FormLabel>
@@ -380,7 +424,7 @@ export default function ProductPage() {
 
                 <FormField
                   control={form.control}
-                  name='sold_price'
+                  name='buy_price'
                   render={() => (
                     <FormItem className='w-full'>
                       <FormLabel>Custo</FormLabel>
@@ -415,62 +459,58 @@ export default function ProductPage() {
         </div>
       </Main>
 
-      {pageType === EPageType.create && (
-        <div>
-          <button
-            onClick={handleIngredientsDrawer}
-            className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'
-          >
-            <ChefHat />
-            <div>Adicionar ingrediente</div>
-          </button>
+      <div>
+        <button
+          onClick={handleIngredientsDrawer}
+          className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'
+        >
+          <ChefHat />
+          <div>Adicionar ingrediente</div>
+        </button>
 
-          <Drawer
-            open={isIngredientsOpen}
-            position='bottom'
-            onClose={handleIngredientsDrawer}
-            variant='secondary'
-          >
-            <div className='mb-4'>
-              <h3 className='text-base font-medium'>
-                Selecione um ingrediente
-              </h3>
-            </div>
+        <Drawer
+          open={isIngredientsOpen}
+          position='bottom'
+          onClose={handleIngredientsDrawer}
+          variant='secondary'
+        >
+          <div className='mb-4'>
+            <h3 className='text-base font-medium'>Selecione um ingrediente</h3>
+          </div>
 
-            <div className='rounded-md border p-2'>
-              <Label htmlFor='search' className='text-muted-foreground mb-1'>
-                Buscar por nome
-              </Label>
-              <Input
-                id='search'
-                placeholder='Digite o nome do ingrediente...'
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-              />
-            </div>
+          <div className='rounded-md border p-2'>
+            <Label htmlFor='search' className='text-muted-foreground mb-1'>
+              Buscar por nome
+            </Label>
+            <Input
+              id='search'
+              placeholder='Digite o nome do ingrediente...'
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+            />
+          </div>
 
-            <div className='h-[400px] overflow-scroll'>
-              {filteredIngredients.map((ingredient) => (
-                <Fragment key={ingredient.id}>
-                  <div
-                    onClick={() => {
-                      handleSelectIngredient(ingredient);
-                    }}
-                    className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
-                  >
-                    <div className='flex flex-col'>
-                      <span className='font-semibold text-gray-800'>
-                        {ingredient.name}
-                      </span>
-                    </div>
-                    <span className='text-sm text-gray-500'>Selecionar</span>
+          <div className='h-[400px] overflow-scroll'>
+            {filteredIngredients.map((ingredient) => (
+              <Fragment key={ingredient.id}>
+                <div
+                  onClick={() => {
+                    handleSelectIngredient(ingredient);
+                  }}
+                  className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
+                >
+                  <div className='flex flex-col'>
+                    <span className='font-semibold text-gray-800'>
+                      {ingredient.name}
+                    </span>
                   </div>
-                </Fragment>
-              ))}
-            </div>
-          </Drawer>
-        </div>
-      )}
+                  <span className='text-sm text-gray-500'>Selecionar</span>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </Drawer>
+      </div>
 
       <Footer variant='ghost'>
         <Button

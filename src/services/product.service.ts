@@ -42,11 +42,11 @@ export const CreateProduct = async (data: ICreateProduct) => {
 
 export const EditProduct = async (data: IEditProduct, id: string) => {
   const ingredients: {
-    product_ingredients: string;
+    ingredient_id: string;
     quantity: number;
   }[] = data.ingredients.map((ingredient) => {
     return {
-      product_ingredients: ingredient.id,
+      ingredient_id: ingredient.id,
       quantity: ingredient.quantity,
     };
   });
@@ -54,8 +54,15 @@ export const EditProduct = async (data: IEditProduct, id: string) => {
   const request = await api.put(`products/${id}`, {
     ...data,
     product_ingredients: {
-      connect: ingredients,
+      deleteMany: {},
+      create: ingredients,
     },
+    category: {
+      connect: {
+        id: data.category,
+      },
+    },
+    ingredients: undefined,
   });
 
   return request.data;

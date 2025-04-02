@@ -1,7 +1,7 @@
 import { EPageType } from '@/enums/EPageType';
 import { IIngredient, IIngredientInProduct } from '@/interfaces/IIngredients';
 import { Trash2 } from 'lucide-react';
-import { forwardRef, HTMLProps, memo, MouseEvent } from 'react';
+import { forwardRef, HTMLProps, memo, MouseEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 interface ICardIngredientsProps extends HTMLProps<HTMLDivElement> {
@@ -68,8 +68,6 @@ export const CardIngredients = memo(
   ),
 );
 
-import { useState } from 'react';
-
 interface QuantityInputProps {
   ingredient: IIngredientInProduct;
   onQuantityChange: (id: string, quantity: number) => void;
@@ -81,19 +79,19 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
   onQuantityChange,
   onRemoveIngredient,
 }) => {
-  const [quantity, setQuantity] = useState<number | ''>(0);
+  const [quantity, setQuantity] = useState<number>(ingredient.quantity || 0);
 
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value =
       event.target.value === ''
-        ? ''
+        ? 0
         : Math.max(0, parseFloat(event.target.value));
 
     setQuantity(value);
-    onQuantityChange(ingredient.id, value || 0);
+    onQuantityChange(ingredient.id, value);
   };
 
-  const totalCost = ((quantity || 0) / 1000) * ingredient.sold_price;
+  const totalCost = (quantity / 1000) * ingredient.sold_price;
 
   return (
     <div className='flex flex-col gap-2 rounded-lg border p-4 shadow'>
@@ -112,7 +110,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
         <input
           type='number'
           min='0'
-          value={quantity}
+          value={quantity || ''}
           onChange={handleQuantityChange}
           className='ml-2 w-24 rounded border p-1'
         />
