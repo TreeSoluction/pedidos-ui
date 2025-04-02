@@ -11,6 +11,14 @@ export interface IProduct {
   updatedAt: string;
 }
 
+export interface IProductIngredients {
+  id: string;
+  product: IProduct;
+  product_id: string;
+  ingredient_id: string;
+  quantity: number;
+}
+
 export interface IProductSelected extends IProduct {
   observation: string;
   quantity: number;

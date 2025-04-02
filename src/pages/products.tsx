@@ -18,7 +18,7 @@ import { ICategory } from '@/interfaces/ICategories';
 import { IProduct } from '@/interfaces/IProducts';
 import { GetAllCategories } from '@/services/category.service';
 import { GetAllProducts } from '@/services/product.service';
-import { Plus } from 'lucide-react';
+import { ChefHat, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -138,7 +138,13 @@ export default function ProductsPage() {
       </Main>
 
       <Footer variant='default'>
-        <div className='flex justify-end'>
+        <div className='flex justify-between'>
+          <Link to={`/ingredients`}>
+            <Button>
+              <ChefHat /> Ingredientes
+            </Button>
+          </Link>
+
           <Link to={`/product/${EPageType.create}`}>
             <Button>
               <Plus /> Novo Produto

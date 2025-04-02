@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 import HomePage from './pages/home';
+import IngredientPage from './pages/ingredient';
+import IngredientsPage from './pages/ingredients';
 import OrderPage from './pages/order';
 import OrdersPage from './pages/orders';
 import ProductPage from './pages/product';
@@ -24,6 +26,8 @@ export default function App() {
       <Route path='reports' element={<ReportsPage />} />
       <Route path='orders' element={<OrdersPage />} />
       <Route path='order/:pageType/:id?' element={<OrderPage />} />
+      <Route path='ingredients' element={<IngredientsPage />} />
+      <Route path='ingredient/:pageType/:id?' element={<IngredientPage />} />
     </Routes>
   );
 }
