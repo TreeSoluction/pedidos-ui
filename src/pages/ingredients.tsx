@@ -56,19 +56,19 @@ export default function IngredientsPage() {
   };
 
   const handleDeleteClick = async (id: string) => {
-    const request = await DeleteIngredients(id);
+    try {
+      await DeleteIngredients(id);
 
-    if (request.id) {
       toast.success('Ingrediente excluído com sucesso!');
 
       await getAllIngredients();
+    } catch (error) {
+      console.log(error);
 
-      return;
+      toast.error(
+        'Não foi possível excluir o ingrediente. Ele pode estar vinculado a um produto. Verifique e tente novamente.',
+      );
     }
-
-    toast.error(
-      'Não foi possível excluir o ingrediente. Ele pode estar vinculado a um produto. Verifique e tente novamente.',
-    );
   };
 
   return (

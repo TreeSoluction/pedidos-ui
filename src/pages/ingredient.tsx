@@ -24,7 +24,6 @@ import {
   EditIngredient,
   GetIngredientById,
 } from '@/services/ingredient.service';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck } from 'lucide-react';
 import { useEffect } from 'react';

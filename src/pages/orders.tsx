@@ -25,6 +25,7 @@ import { DeleteOrders, GetAllOrders } from '@/services/order.service';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { toast } from 'sonner';
 
 export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -82,11 +83,23 @@ export default function OrdersPage() {
   };
 
   const deleteOrder = async (id: string) => {
-    await DeleteOrders(id);
-    await getAllOrders();
+    try {
+      await DeleteOrders(id);
 
-    setIsDialogOpen(false);
-    setOrderToDelete(null);
+      toast.success('Pedido excluído com sucesso!');
+
+      await getAllOrders();
+
+      setIsDialogOpen(false);
+      setOrderToDelete(null);
+    } catch (error) {
+      console.log(error);
+
+      toast.success('Não foi possível excluir seu pedido!');
+
+      setIsDialogOpen(false);
+      setOrderToDelete(null);
+    }
   };
 
   const handleDeleteClick = (id: string) => {
@@ -152,7 +165,6 @@ export default function OrdersPage() {
         </div>
       </Footer>
 
-      {/* Confirmation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
