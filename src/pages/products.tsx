@@ -17,10 +17,11 @@ import { EPageType } from '@/enums/EPageType';
 import { ICategory } from '@/interfaces/ICategories';
 import { IProduct } from '@/interfaces/IProducts';
 import { GetAllCategories } from '@/services/category.service';
-import { GetAllProducts } from '@/services/product.service';
+import { DeleteProduct, GetAllProducts } from '@/services/product.service';
 import { ChefHat, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -86,6 +87,19 @@ export default function ProductsPage() {
     setFilteredProducts(searchedProducts);
   };
 
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await DeleteProduct(id);
+
+      toast.success('Produto excluído com sucesso!');
+
+      getAllProducts();
+    } catch (error) {
+      console.log(error);
+      toast.error('Não foi possível excluir o produto.');
+    }
+  };
+
   return (
     <>
       <BackButton to='/' />
@@ -130,6 +144,7 @@ export default function ProductsPage() {
               productData={product}
               key={product.id}
               navigable={true}
+              onRemove={handleDeleteProduct}
             />
           ))
         ) : (

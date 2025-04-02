@@ -67,3 +67,9 @@ export const EditProduct = async (data: IEditProduct, id: string) => {
 
   return request.data;
 };
+
+export const DeleteProduct = async (id: string) => {
+  const request = await api.delete(`products/${id}`);
+
+  return request.data;
+};

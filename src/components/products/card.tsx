@@ -7,11 +7,12 @@ import { useNavigate } from 'react-router';
 interface ICardProductsProps extends HTMLProps<HTMLDivElement> {
   productData: IProduct;
   navigable: boolean;
+  onRemove?: (id: string) => void;
 }
 
 export const CardProducts = memo(
   forwardRef<HTMLDivElement, ICardProductsProps>(
-    ({ productData, navigable, ...props }, ref) => {
+    ({ productData, navigable, onRemove, ...props }, ref) => {
       const navigate = useNavigate();
 
       const productClicked = () => {
@@ -24,7 +25,7 @@ export const CardProducts = memo(
         <div
           ref={ref}
           {...props}
-          className={`rounded-md border p-2 shadow-md ${
+          className={`flex items-center justify-between rounded-md border p-2 shadow-md ${
             navigable ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default'
           }`}
           role={navigable ? 'button' : undefined}
@@ -37,6 +38,17 @@ export const CardProducts = memo(
               {productData.category.name}
             </p>
           </div>
+          {onRemove && (
+            <button
+              className='ml-2 px-2 py-1 text-red-600 hover:text-red-800'
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(productData.id);
+              }}
+            >
+              <Trash2 />
+            </button>
+          )}
         </div>
       );
     },

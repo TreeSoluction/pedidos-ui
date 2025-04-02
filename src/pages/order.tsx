@@ -76,18 +76,6 @@ export default function RequestPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
-  }, [selectedProducts]);
-
-  useEffect(() => {
-    localStorage.setItem('quantity', JSON.stringify(quantity));
-  }, [quantity]);
-
-  useEffect(() => {
-    localStorage.setItem('observation', observation);
-  }, [observation]);
-
-  useEffect(() => {
     const fetchData = async () => {
       await getAllProducts();
     };
@@ -422,7 +410,10 @@ export default function RequestPage() {
                   <FormItem className='w-full'>
                     <FormLabel>Nome</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        disabled={pageType === EPageType.edit}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -435,7 +426,10 @@ export default function RequestPage() {
                   <FormItem className='w-full'>
                     <FormLabel>Endereço</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        disabled={pageType === EPageType.edit}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
