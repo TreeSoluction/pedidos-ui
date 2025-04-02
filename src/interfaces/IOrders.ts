@@ -12,7 +12,10 @@ export interface IOrder {
 export interface ICreateOrder {
   name?: string;
   address?: string;
-  items: IProductSelected[];
+  items: {
+    product_id: string;
+    observation: string;
+  }[];
 }
 
 export interface IEditOrder {

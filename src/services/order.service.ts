@@ -14,7 +14,32 @@ export const GetOrderById = async (id: string) => {
 };
 
 export const CreateOrders = async (data: ICreateOrder) => {
-  const request = await api.post('orders', data);
+  const items: {
+    create: {
+      product: {
+        connect: {
+          id: string;
+        };
+      };
+      observation: string;
+    };
+  }[] = data.items.map(({ observation, product_id }) => {
+    return {
+      create: {
+        observation,
+        product: {
+          connect: {
+            id: product_id,
+          },
+        },
+      },
+    };
+  });
+
+  const request = await api.post('orders', {
+    ...data,
+    items,
+  });
 
   return request.data;
 };

@@ -153,13 +153,29 @@ export default function RequestPage() {
       toast.error('Selecione pelo menos um produto antes de criar.');
       return;
     }
-    const request = await CreateOrders({ ...data, items: selectedProducts });
+
+    const items = [];
+
+    for (const product of selectedProducts) {
+      for (let index = 0; index < product.quantity; index++) {
+        items.push({
+          product_id: product.id,
+          observation: product.observation,
+        });
+      }
+    }
+
+    const request = await CreateOrders({ ...data, items });
+
     if (!request) {
       toast.error('Não foi possível criar o pedido');
       return;
     }
+
     toast.success('Pedido salvo com sucesso!');
+
     clearCache();
+
     navigate(`/order/${EPageType.edit}/${request.id}`);
   };
 
@@ -195,6 +211,7 @@ export default function RequestPage() {
   };
 
   const handleDrawer = () => setIsOpen((s) => !s);
+
   const handleSelectProductDrawer = () => setIsOpenSelectedProduct((s) => !s);
 
   const handleSelectProduct = (product: IProduct) => {
@@ -327,13 +344,13 @@ export default function RequestPage() {
       if (!characteristic) throw new Error('Característica não encontrada');
 
       let receipt = '';
-      receipt += '    PEDIDO - LANCHONETE    \n';
+      receipt += '    PEDIDO - BRABOS BURGUER    \n';
       receipt += '----------------------------\n';
       receipt += `Nome: ${form.getValues('name')}\n`;
       receipt += `Endereco: ${form.getValues('address')}\n`;
       selectedProducts.forEach((item, index) => {
         receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
-        receipt += `    Qtde: ${item.quantity}\n`;
+        receipt += `    Valor: ${item.buy_price}\n`;
         if (item.observation)
           receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
         receipt += '----------------------------\n';
