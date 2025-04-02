@@ -308,7 +308,7 @@ export default function ProductPage() {
     <>
       <BackButton to='/products' />
 
-      <Main>
+      <Main className='pb-40'>
         <h1 className='mt-2 mb-1 font-semibold'>
           {pageType === EPageType.create
             ? 'Criar Produto'

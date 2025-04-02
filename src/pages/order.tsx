@@ -455,90 +455,6 @@ export default function RequestPage() {
           </div>
         )}
 
-        {pageType === EPageType.create && (
-          <div>
-            <button
-              onClick={handleDrawer}
-              className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'
-            >
-              <HandPlatter />
-              <div>Adicionar produto</div>
-            </button>
-
-            <Drawer
-              open={isOpen}
-              position='bottom'
-              onClose={handleDrawer}
-              variant='secondary'
-            >
-              <div className='mb-4'>
-                <h3 className='text-base font-medium'>Selecione um produto</h3>
-              </div>
-
-              <div className='rounded-md border p-2'>
-                <Label
-                  htmlFor='category'
-                  className='text-muted-foreground mb-1'
-                >
-                  Categorias
-                </Label>
-                <Select
-                  onValueChange={(e) => changeCategory(e)}
-                  defaultValue='all'
-                >
-                  <SelectTrigger className='w-full'>
-                    <SelectValue placeholder='Categoria' />
-                  </SelectTrigger>
-                  <SelectContent id='category'>
-                    <SelectItem value='all'>Todos</SelectItem>
-
-                    {categories.map((category) => (
-                      <SelectItem value={category.id} key={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className='rounded-md border p-2'>
-                <Label htmlFor='search' className='text-muted-foreground mb-1'>
-                  Buscar por nome
-                </Label>
-                <Input
-                  id='search'
-                  placeholder='Digite o nome do lanche...'
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-              </div>
-
-              <div className='h-[400px] overflow-scroll'>
-                {filteredProducts.map((product) => (
-                  <Fragment key={product.id}>
-                    <div
-                      onClick={() => {
-                        handleSelectProduct(product);
-                      }}
-                      className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
-                    >
-                      <div className='flex flex-col'>
-                        <span className='font-semibold text-gray-800'>
-                          {product.name}
-                        </span>
-                        <span className='text-muted-foreground text-sm'>
-                          {product.category.name}
-                        </span>
-                      </div>
-                      <span className='text-sm text-gray-500'>Selecionar</span>
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-            </Drawer>
-          </div>
-        )}
-
         <Drawer
           open={isOpenSelectedProduct}
           position='bottom'
@@ -614,6 +530,87 @@ export default function RequestPage() {
           )}
         </Drawer>
       </Main>
+
+      {pageType === EPageType.create && (
+        <div>
+          <button
+            onClick={handleDrawer}
+            className='absolute right-2 bottom-18 flex gap-2 rounded-full bg-green-500 p-2'
+          >
+            <HandPlatter />
+            <div>Adicionar produto</div>
+          </button>
+
+          <Drawer
+            open={isOpen}
+            position='bottom'
+            onClose={handleDrawer}
+            variant='secondary'
+          >
+            <div className='mb-4'>
+              <h3 className='text-base font-medium'>Selecione um produto</h3>
+            </div>
+
+            <div className='rounded-md border p-2'>
+              <Label htmlFor='category' className='text-muted-foreground mb-1'>
+                Categorias
+              </Label>
+              <Select
+                onValueChange={(e) => changeCategory(e)}
+                defaultValue='all'
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Categoria' />
+                </SelectTrigger>
+                <SelectContent id='category'>
+                  <SelectItem value='all'>Todos</SelectItem>
+
+                  {categories.map((category) => (
+                    <SelectItem value={category.id} key={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='rounded-md border p-2'>
+              <Label htmlFor='search' className='text-muted-foreground mb-1'>
+                Buscar por nome
+              </Label>
+              <Input
+                id='search'
+                placeholder='Digite o nome do lanche...'
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+
+            <div className='h-[400px] overflow-scroll'>
+              {filteredProducts.map((product) => (
+                <Fragment key={product.id}>
+                  <div
+                    onClick={() => {
+                      handleSelectProduct(product);
+                    }}
+                    className='flex cursor-pointer items-center justify-between border-b p-3 transition-colors hover:bg-gray-100'
+                  >
+                    <div className='flex flex-col'>
+                      <span className='font-semibold text-gray-800'>
+                        {product.name}
+                      </span>
+                      <span className='text-muted-foreground text-sm'>
+                        {product.category.name}
+                      </span>
+                    </div>
+                    <span className='text-sm text-gray-500'>Selecionar</span>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          </Drawer>
+        </div>
+      )}
 
       <Footer variant='default'>
         {pageType === EPageType.create && (
