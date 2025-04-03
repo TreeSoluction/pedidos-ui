@@ -12,6 +12,11 @@ export const GetProductDaySold = async (productId: string) => {
   return request.data;
 };
 
+export const GetDailyProfit = async () => {
+  const request = await api.get(`/plots/weekprofit`);
+  return request.data;
+};
+
 export const GetProductWeekSold = async (productId: string) => {
   const request = await api.get(
     `/plots/weeksold/product?productId=${productId}`,
