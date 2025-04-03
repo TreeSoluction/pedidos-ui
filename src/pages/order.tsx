@@ -224,14 +224,14 @@ export default function RequestPage() {
   };
 
   const totalPrice = preSelectedProducts
-    ? (preSelectedProducts.buy_price * quantity).toLocaleString('pt-BR', {
+    ? (preSelectedProducts.sold_price * quantity).toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       })
     : 'R$ 0,00';
 
   const unitPrice = preSelectedProducts
-    ? preSelectedProducts.buy_price.toLocaleString('pt-BR', {
+    ? preSelectedProducts.sold_price.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       })
@@ -319,7 +319,7 @@ export default function RequestPage() {
       receipt += `Endereco: ${form.getValues('address')}\n`;
       selectedProducts.forEach((item, index) => {
         receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
-        receipt += `    Valor: ${item.buy_price}\n`;
+        receipt += `    Valor: ${item.sold_price}\n`;
         if (item.observation)
           receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
         receipt += '----------------------------\n';
