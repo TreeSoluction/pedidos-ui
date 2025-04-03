@@ -55,22 +55,11 @@ export default function RequestPage() {
   const [preSelectedProducts, setPreSelectedProducts] =
     useState<IProduct | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
   const [selectedProducts, setSelectedProducts] = useState<IProductSelected[]>(
-    () => {
-      const cachedProducts = localStorage.getItem('selectedProducts');
-      return cachedProducts ? JSON.parse(cachedProducts) : [];
-    },
+    [],
   );
-
-  const [quantity, setQuantity] = useState<number>(() => {
-    const cachedQuantity = localStorage.getItem('quantity');
-    return cachedQuantity ? JSON.parse(cachedQuantity) : 1;
-  });
-
-  const [observation, setObservation] = useState<string>(() => {
-    return localStorage.getItem('observation') || '';
-  });
+  const [quantity, setQuantity] = useState<number>(1);
+  const [observation, setObservation] = useState<string>('');
 
   const { pageType, id } = useParams<{ pageType: EPageType; id?: string }>();
   const navigate = useNavigate();
@@ -162,8 +151,6 @@ export default function RequestPage() {
 
     toast.success('Pedido salvo com sucesso!');
 
-    clearCache();
-
     navigate(`/order/${EPageType.edit}/${request.id}`);
   };
 
@@ -234,12 +221,6 @@ export default function RequestPage() {
     setQuantity(1);
     setObservation('');
     setIsOpenSelectedProduct(false);
-  };
-
-  const clearCache = () => {
-    localStorage.removeItem('selectedProducts');
-    localStorage.removeItem('quantity');
-    localStorage.removeItem('observation');
   };
 
   const totalPrice = preSelectedProducts
