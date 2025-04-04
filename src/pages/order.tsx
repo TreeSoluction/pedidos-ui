@@ -29,6 +29,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { EPageType } from '@/enums/EPageType';
 import { ICategory } from '@/interfaces/ICategories';
+import { IOrder } from '@/interfaces/IOrders';
 import { IProduct, IProductSelected } from '@/interfaces/IProducts';
 import {
   CreateOrderFormData,
@@ -40,6 +41,7 @@ import { GetAllCategories } from '@/services/category.service';
 import { CreateOrders, GetOrderById } from '@/services/order.service';
 import { GetAllProducts } from '@/services/product.service';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { jsPDF } from 'jspdf';
 import { CircleCheck, HandPlatter, ReceiptText } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -47,6 +49,7 @@ import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 
 export default function RequestPage() {
+  const [order, setOrder] = useState<IOrder | null>();
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenSelectedProduct, setIsOpenSelectedProduct] = useState(false);
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -161,6 +164,9 @@ export default function RequestPage() {
         toast.error('Pedido não encontrado');
         return;
       }
+
+      setOrder(order);
+
       form.reset({
         name: order.name || '',
         address: order.address || '',
@@ -237,8 +243,68 @@ export default function RequestPage() {
       })
     : 'R$ 0,00';
 
+  const generateReceiptPDF = () => {
+    const doc = new jsPDF();
+    let y = 10;
+
+    doc.setFont('courier');
+    doc.setFontSize(12);
+
+    doc.text('PEDIDO - BRABOS BURGUER', 50, y);
+    y += 10;
+    doc.text('----------------------------', 10, y);
+    y += 10;
+    doc.text(`Número do Pedido: ${order?.order_number}`, 10, y);
+    y += 6;
+    doc.text(`Nome: ${form.getValues('name')}`, 10, y);
+    y += 6;
+    doc.text(`Endereço: ${form.getValues('address')}`, 10, y);
+    y += 10;
+    doc.text('----------------------------', 10, y);
+    y += 10;
+
+    let totalPrice = 0;
+
+    selectedProducts.forEach((item, index) => {
+      doc.text(`${index + 1}. ${item.name.slice(0, 27)}`, 10, y);
+      y += 6;
+      const formattedPrice = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(item.sold_price);
+      doc.text(`   Valor: ${formattedPrice}`, 10, y);
+      totalPrice += item.sold_price;
+      if (item.observation) {
+        doc.text(`   Obs: ${item.observation.slice(0, 23)}`, 10, y);
+        y += 6;
+      }
+      y += 6;
+      doc.text('----------------------------', 10, y);
+      y += 10;
+    });
+
+    const formattedTotal = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(totalPrice);
+    doc.text(`TOTAL: ${formattedTotal}`, 10, y);
+    y += 10;
+
+    doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, 10, y);
+    y += 10;
+    doc.text('\n\n\n', 10, y);
+
+    doc.save(`pedido_${order?.order_number}.pdf`);
+  };
+
   const findAndPrintReceipt = async () => {
     try {
+      if (!navigator.bluetooth) {
+        alert('Bluetooth não suportado! Gerando PDF...');
+        generateReceiptPDF();
+        return;
+      }
+
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'],
@@ -315,15 +381,31 @@ export default function RequestPage() {
       let receipt = '';
       receipt += '    PEDIDO - BRABOS BURGUER    \n';
       receipt += '----------------------------\n';
+      receipt += `Número do Pedido: ${order?.order_number}\n`;
       receipt += `Nome: ${form.getValues('name')}\n`;
-      receipt += `Endereco: ${form.getValues('address')}\n`;
+      receipt += `Endereço: ${form.getValues('address')}\n`;
+      receipt += '----------------------------\n';
+
+      let totalPrice = 0;
+
       selectedProducts.forEach((item, index) => {
         receipt += `${index + 1}. ${item.name.slice(0, 27)}\n`;
-        receipt += `    Valor: ${item.sold_price}\n`;
+        const formattedPrice = new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }).format(item.sold_price);
+        receipt += `    Valor: ${formattedPrice}\n`;
+        totalPrice += item.sold_price;
         if (item.observation)
-          receipt += '    Obs: ' + item.observation.slice(0, 23) + '\n';
+          receipt += `    Obs: ${item.observation.slice(0, 23)}\n`;
         receipt += '----------------------------\n';
       });
+
+      const formattedTotal = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(totalPrice);
+      receipt += `TOTAL: ${formattedTotal}\n`;
       receipt += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
       receipt += '\n\n\n';
 

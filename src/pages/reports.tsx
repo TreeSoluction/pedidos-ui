@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BackButton } from '@/components/back';
 import { ProgressPlotsPrice } from '@/components/charts/pie.chats';
 import { Main } from '@/components/main';
@@ -27,7 +28,7 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchData = async () => {
       const fetchedProfit = await GetDailyProfit();
-      let profitValues: IProfitValue[] = [];
+      const profitValues: IProfitValue[] = [];
       fetchedProfit.forEach((profit: any) => {
         profitValues.push({
           day: dayTranslation[profit.day],
@@ -51,8 +52,9 @@ export default function ReportsPage() {
 
   return (
     <>
+      <BackButton />
+
       <Main className='mt-4 flex flex-col gap-2'>
-        <BackButton />
         <ProgressPlotsPrice
           goal={1000}
           reach={getTotalProfit()}

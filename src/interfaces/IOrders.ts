@@ -7,6 +7,7 @@ export interface IOrder {
   createdAt: Date;
   updatedAt: Date;
   items: IProduct[];
+  order_number: number;
 }
 
 export interface ICreateOrder {

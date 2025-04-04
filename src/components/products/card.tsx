@@ -63,13 +63,13 @@ interface ICardProductsWithDetailsProps extends HTMLProps<HTMLDivElement> {
 export const CardProductsWithDetails = memo(
   forwardRef<HTMLDivElement, ICardProductsWithDetailsProps>(
     ({ productData, onRemove, ...props }, ref) => {
-      const formattedPrice = productData.buy_price.toLocaleString('pt-BR', {
+      const formattedPrice = productData.sold_price.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       });
 
       const quantity = productData.quantity ?? 1;
-      const totalPrice = (productData.buy_price * quantity).toLocaleString(
+      const totalPrice = (productData.sold_price * quantity).toLocaleString(
         'pt-BR',
         {
           style: 'currency',

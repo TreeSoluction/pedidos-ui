@@ -63,16 +63,22 @@ export function ProgressPlotsPrice({ goal, reach, title }: WeekSoldPlotsProps) {
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className='fill-foreground text-4xl font-bold'
+                          className='fill-foreground text-2xl font-bold'
                         >
-                          {'R$' + reach.toLocaleString()}
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(reach)}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className='fill-muted-foreground'
                         >
-                          {'R$' + goal.toLocaleString()}
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(goal)}
                         </tspan>
                       </text>
                     );
