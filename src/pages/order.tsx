@@ -688,16 +688,25 @@ export default function RequestPage() {
         )}
 
         {pageType === EPageType.edit && (
-          <>
+          <div className='flex w-full justify-between'>
             <Button
-              type='submit'
+              type='button'
               variant='success'
-              className='h-full w-full'
-              onClick={findAndPrintReceipt}
+              onClick={generateReceiptPDF}
+              className='w-40'
             >
-              <ReceiptText className='mr-2' /> Imprimir
+              <ReceiptText /> Gerar PDF
             </Button>
-          </>
+
+            <Button
+              type='button'
+              variant='success'
+              onClick={findAndPrintReceipt}
+              className='w-40'
+            >
+              <ReceiptText /> Imprimir
+            </Button>
+          </div>
         )}
       </Footer>
     </>
