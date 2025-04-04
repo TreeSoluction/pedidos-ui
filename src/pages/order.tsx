@@ -254,11 +254,11 @@ export default function RequestPage() {
     y += 10;
     doc.text('----------------------------', 10, y);
     y += 10;
-    doc.text(`Número do Pedido: ${order?.order_number}`, 10, y);
+    doc.text(`Numero do Pedido: ${order?.order_number}`, 10, y);
     y += 6;
     doc.text(`Nome: ${form.getValues('name')}`, 10, y);
     y += 6;
-    doc.text(`Endereço: ${form.getValues('address')}`, 10, y);
+    doc.text(`Endereco: ${form.getValues('address')}`, 10, y);
     y += 10;
     doc.text('----------------------------', 10, y);
     y += 10;
