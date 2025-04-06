@@ -13,13 +13,13 @@ interface IProfitValue {
 }
 
 const dayTranslation: { [key: number]: string } = {
-  0: 'Dom',
-  1: 'Seg',
-  2: 'Terc',
-  3: 'Quar',
-  4: 'Quin',
-  5: 'Sex',
-  6: 'Sab',
+  0: 'Seg',
+  1: 'Terc',
+  2: 'Quart',
+  3: 'Quint',
+  4: 'Sext',
+  5: 'Sab',
+  6: 'Dom',
 };
 
 export default function ReportsPage() {
