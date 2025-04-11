@@ -151,15 +151,13 @@ export default function ProductsPage() {
           <div>Nenhum produto encontrado</div>
         )}
       </Main>
-
-      <Footer variant='default'>
-        <div className='flex justify-between'>
+      <Footer>
+        <div className='flex w-full justify-evenly'>
           <Link to={`/ingredients`}>
             <Button>
               <ChefHat /> Ingredientes
             </Button>
           </Link>
-
           <Link to={`/product/${EPageType.create}`}>
             <Button>
               <Plus /> Novo Produto

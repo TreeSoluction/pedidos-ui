@@ -101,7 +101,7 @@ export default function ExpensesPage() {
       </Main>
 
       <Footer variant='default'>
-        <div className='flex justify-end'>
+        <div className='flex w-full justify-end'>
           <Link to={`/expense/${EPageType.create}`}>
             <Button variant='success' className='flex items-center gap-2'>
               <Plus size={18} /> Nova Despesa

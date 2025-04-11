@@ -57,36 +57,38 @@ export default function HomePage() {
           />
         )}
       </Main>
-
       <Footer>
-        <div className='flex w-full flex-wrap items-center justify-center gap-4'>
-          <Link to={'reports'}>
-            <Button>
-              <FileText />
-              Relatórios
-            </Button>
-          </Link>
+        <div className='flex w-full max-w-lg flex-col gap-2 px-1'>
+          <div className='p flex w-full justify-evenly'>
+            <Link to={'reports'} className='mx-1 flex-1'>
+              <Button className='w-full'>
+                <FileText className='h-5 w-5' />
+                <span className='truncate text-sm'>Relatórios</span>
+              </Button>
+            </Link>
 
-          <Link to={'products'}>
-            <Button>
-              <Package2 />
-              Produtos
-            </Button>
-          </Link>
+            <Link to={'products'} className='mx-1 flex-1'>
+              <Button className='w-full'>
+                <Package2 className='h-5 w-5' />
+                <span className='truncate text-sm'>Produtos</span>
+              </Button>
+            </Link>
+          </div>
+          <div className='flex w-full justify-evenly'>
+            <Link to={'expenses'} className='mx-1 flex-1'>
+              <Button className='w-full'>
+                <Package2 className='h-5 w-5' />
+                <span className='truncate text-sm'>Despesas</span>
+              </Button>
+            </Link>
 
-          <Link to={'expenses'}>
-            <Button>
-              <Package2 />
-              Despesas
-            </Button>
-          </Link>
-
-          <Link to={'orders'}>
-            <Button>
-              <ChefHat />
-              Pedidos
-            </Button>
-          </Link>
+            <Link to={'orders'} className='mx-1 flex-1'>
+              <Button className='w-full'>
+                <ChefHat className='h-5 w-5' />
+                <span className='truncate text-sm'>Pedidos</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </Footer>
     </>
