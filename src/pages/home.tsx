@@ -74,6 +74,13 @@ export default function HomePage() {
             </Button>
           </Link>
 
+          <Link to={'expenses'}>
+            <Button>
+              <Package2 />
+              Despesas
+            </Button>
+          </Link>
+
           <Link to={'orders'}>
             <Button>
               <ChefHat />

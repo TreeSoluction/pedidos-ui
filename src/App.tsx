@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
+import ExpensePage from './pages/expense';
+import ExpensesPage from './pages/expenses';
 import HomePage from './pages/home';
 import IngredientPage from './pages/ingredient';
 import IngredientsPage from './pages/ingredients';
@@ -21,6 +23,8 @@ export default function App() {
   return (
     <Routes>
       <Route index element={<HomePage />} />
+      <Route path='expenses' element={<ExpensesPage />} />
+      <Route path='expense/:pageType/:id?' element={<ExpensePage />} />
       <Route path='products' element={<ProductsPage />} />
       <Route path='product/:pageType/:id?' element={<ProductPage />} />
       <Route path='reports' element={<ReportsPage />} />
